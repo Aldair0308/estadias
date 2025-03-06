@@ -91,6 +91,17 @@ class FileController extends Controller
         $oldFile = File::findOrFail($id);
         $file = $request->file('file');
         
+        // Check if the file content matches any existing version
+        $newContent = file_get_contents($file->getRealPath());
+        $existingVersions = File::where('parent_id', $id)->get();
+        
+        foreach ($existingVersions as $version) {
+            $versionContent = Storage::disk('public')->get($version->path);
+            if ($newContent === $versionContent) {
+                return back()->withErrors(['file' => 'This file content already exists in version created at ' . $version->created_at]);
+            }
+        }
+        
         $extension = $file->getClientOriginalExtension();
         $name = Str::random(40) . '.' . $extension;
         $path = $file->storeAs('files', $name, 'public');
@@ -140,5 +151,25 @@ class FileController extends Controller
         $parentFile = $file;
         $versions = $file->parent_id ? File::where('id', $file->parent_id)->orWhere('parent_id', $file->parent_id)->get() : File::where('id', $file->id)->orWhere('parent_id', $file->id)->get();
         return view('files.history', compact('parentFile', 'versions', 'file'));
+    }
+
+    public function preview(File $file)
+    {
+        if ($file->isWord()) {
+            $htmlContent = $file->getHtmlContent();
+            return view('files.preview', compact('file', 'htmlContent'));
+        }
+
+        if ($file->isPdf()) {
+            $pdfUrl = Storage::disk('public')->url($file->path);
+            return view('files.preview', compact('file', 'pdfUrl'));
+        }
+
+        if ($file->isExcel()) {
+            // Handle Excel files with existing functionality
+            return view('files.preview', compact('file'));
+        }
+
+        abort(404, 'Preview not available for this file type');
     }
 }

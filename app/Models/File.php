@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class File extends Model
 {
@@ -18,7 +19,8 @@ class File extends Model
         'size',
         'version',
         'parent_id',
-        'description'
+        'description',
+        'content_hash'
     ];
 
     /**
@@ -46,6 +48,36 @@ class File extends Model
     }
 
     /**
+     * Check if content matches any previous version
+     *
+     * @param string $content_hash
+     * @return array|null Returns matching version info or null if no match found
+     */
+    public function findMatchingVersion(string $content_hash)
+    {
+        if ($this->parent_id) {
+            $parent = $this->parent;
+        } else {
+            $parent = $this;
+        }
+
+        $matching_version = $parent->versions()
+            ->where('content_hash', $content_hash)
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if ($matching_version) {
+            return [
+                'version' => $matching_version->version,
+                'date' => $matching_version->created_at->format('Y-m-d'),
+                'id' => $matching_version->id
+            ];
+        }
+
+        return null;
+    }
+
+    /**
      * Check if the file is an Excel file
      */
     public function isExcel()
@@ -65,5 +97,26 @@ class File extends Model
             'application/msword',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         ]);
+    }
+
+    /**
+     * Convert Word document to HTML for preview
+     */
+    public function getHtmlContent()
+    {
+        if (!$this->isWord()) {
+            return null;
+        }
+
+        $filePath = Storage::disk('public')->path($this->path);
+        $phpWord = \PhpOffice\PhpWord\IOFactory::load($filePath);
+
+        $htmlWriter = new \PhpOffice\PhpWord\Writer\HTML($phpWord);
+        $htmlContent = '';
+        ob_start();
+        $htmlWriter->save('php://output');
+        $htmlContent = ob_get_clean();
+
+        return $htmlContent;
     }
 }

@@ -52,15 +52,8 @@
                         <div class="mt-3">
                             <h5>Excel File Preview:</h5>
                             <div class="alert alert-info">
-                                <p class="mb-0">This is an Excel file. You can:</p>
-                                <ul class="mb-0">
-                                    <li>Download and open it with Microsoft Excel or compatible software</li>
-                                    <li>Use the preview button below to view it in Microsoft Office Online (if available)</li>
-                                </ul>
+                                <p class="mb-0">This is an Excel file. You can download and open it with Microsoft Excel or compatible software.</p>
                             </div>
-                            <a href="https://view.officeapps.live.com/op/view.aspx?src={{ urlencode(url(Storage::url($file->path))) }}" class="btn btn-success mt-2" target="_blank">
-                                Preview in Microsoft Office Online
-                            </a>
                             
                             @if($excelPreview)
                                 <div class="mt-4">
@@ -85,15 +78,16 @@
                         <div class="mt-3">
                             <h5>Word Document Preview:</h5>
                             <div class="alert alert-info">
-                                <p class="mb-0">This is a Word document. You can:</p>
-                                <ul class="mb-0">
-                                    <li>Download and open it with Microsoft Word or compatible software</li>
-                                    <li>Use the preview button below to view it in Microsoft Office Online (if available)</li>
-                                </ul>
+                                <p class="mb-0">This is a Word document. You can download and open it with Microsoft Word or compatible software.</p>
                             </div>
-                            <a href="https://view.officeapps.live.com/op/view.aspx?src={{ urlencode(url(Storage::url($file->path))) }}" class="btn btn-success mt-2" target="_blank">
-                                Preview in Microsoft Office Online
-                            </a>
+                            @if($file->getHtmlContent())
+                                <div class="mt-4">
+                                    <h5>Document Content Preview:</h5>
+                                    <div class="bg-white p-4 border rounded" style="max-height: 800px; overflow-y: auto;">
+                                        {!! $file->getHtmlContent() !!}
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     @endif
                 </div>

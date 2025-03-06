@@ -21,6 +21,7 @@ return new class extends Migration
             $table->integer('version')->default(1);
             $table->unsignedBigInteger('parent_id')->nullable();
             $table->text('description')->nullable();
+            $table->string('content_hash')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
