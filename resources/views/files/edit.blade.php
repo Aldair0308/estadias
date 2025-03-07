@@ -30,13 +30,20 @@
                     @method('PUT')
                     <div class="mb-3">
                         <label for="file" class="form-label">Upload New Version (PDF or Excel only)</label>
-                        <input type="file" class="form-control" id="file" name="file" required>
+                        <input type="file" class="form-control" id="file" name="file">
                         <div class="form-text">Maximum file size: 10MB</div>
                     </div>
                     <div class="mb-3">
                         <label for="description" class="form-label">Description (Optional)</label>
                         <textarea class="form-control" id="description" name="description" rows="3">{{ old('description', $file->description) }}</textarea>
                     </div>
+                    @can('edit files')
+                    <div class="mb-3">
+                        <label for="observations" class="form-label">Observations</label>
+                        <textarea class="form-control" id="observations" name="observations" rows="4">{{ old('observations', $file->observations) }}</textarea>
+                        <div class="form-text">Add observations or feedback about this file.</div>
+                    </div>
+                    @endcan
                     <button type="submit" class="btn btn-primary">Update File</button>
                 </form>
             </div>

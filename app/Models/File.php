@@ -20,7 +20,8 @@ class File extends Model
         'version',
         'parent_id',
         'description',
-        'content_hash'
+        'content_hash',
+        'observations'
     ];
 
     /**
@@ -55,17 +56,6 @@ class File extends Model
      */
     public function findMatchingVersion(string $content_hash)
     {
-        if ($this->parent_id) {
-            $parent = $this->parent;
-        } else {
-            $parent = $this;
-        }
-
-        $matching_version = $parent->versions()
-            ->where('content_hash', $content_hash)
-            ->orderBy('created_at', 'desc')
-            ->first();
-
         if ($matching_version) {
             return [
                 'version' => $matching_version->version,

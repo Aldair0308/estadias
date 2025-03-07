@@ -84,41 +84,55 @@ class FileController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'file' => 'required|file|mimes:pdf,xls,xlsx,doc,docx|max:10240',
-            'description' => 'nullable|string|max:1000'
+            'file' => 'nullable|file|mimes:pdf,xls,xlsx,doc,docx|max:10240',
+            'description' => 'nullable|string|max:1000',
+            'observations' => 'nullable|string|max:2000'
         ]);
 
         $oldFile = File::findOrFail($id);
-        $file = $request->file('file');
         
-        // Check if the file content matches any existing version
-        $newContent = file_get_contents($file->getRealPath());
-        $existingVersions = File::where('parent_id', $id)->get();
-        
-        foreach ($existingVersions as $version) {
-            $versionContent = Storage::disk('public')->get($version->path);
-            if ($newContent === $versionContent) {
-                return back()->withErrors(['file' => 'This file content already exists in version created at ' . $version->created_at]);
+        // If a new file is uploaded
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            
+            // Check if the file content matches any existing version
+            $newContent = file_get_contents($file->getRealPath());
+            $existingVersions = File::where('parent_id', $id)->get();
+            
+            foreach ($existingVersions as $version) {
+                $versionContent = Storage::disk('public')->get($version->path);
+                if ($newContent === $versionContent) {
+                    return back()->withErrors(['file' => 'This file content already exists in version created at ' . $version->created_at]);
+                }
             }
+            
+            $extension = $file->getClientOriginalExtension();
+            $name = Str::random(40) . '.' . $extension;
+            $path = $file->storeAs('files', $name, 'public');
+
+            // Create new version
+            File::create([
+                'name' => $name,
+                'original_name' => $file->getClientOriginalName(),
+                'path' => $path,
+                'mime_type' => $file->getMimeType(),
+                'size' => $file->getSize(),
+                'version' => $oldFile->version + 1,
+                'parent_id' => $oldFile->parent_id ?? $oldFile->id,
+                'description' => $request->description,
+                'observations' => $request->observations
+            ]);
+
+            return redirect()->route('files.index')->with('success', 'File updated successfully with new version.');
+        } else {
+            // Update only the metadata without creating a new version
+            $oldFile->update([
+                'description' => $request->description,
+                'observations' => $request->observations
+            ]);
+            
+            return redirect()->route('files.index')->with('success', 'File information updated successfully.');
         }
-        
-        $extension = $file->getClientOriginalExtension();
-        $name = Str::random(40) . '.' . $extension;
-        $path = $file->storeAs('files', $name, 'public');
-
-        // Create new version
-        File::create([
-            'name' => $name,
-            'original_name' => $file->getClientOriginalName(),
-            'path' => $path,
-            'mime_type' => $file->getMimeType(),
-            'size' => $file->getSize(),
-            'version' => $oldFile->version + 1,
-            'parent_id' => $oldFile->parent_id ?? $oldFile->id,
-            'description' => $request->description
-        ]);
-
-        return redirect()->route('files.index')->with('success', 'File updated successfully.');
     }
 
     public function destroy(string $id)

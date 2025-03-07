@@ -35,6 +35,12 @@
                     <div class="col-md-6">
                         <p><strong>Description:</strong></p>
                         <p>{{ $file->description ?? 'No description provided.' }}</p>
+                        @can('edit files')
+                        <div class="mt-3">
+                            <p><strong>Observations:</strong></p>
+                            <p>{{ $file->observations ?? 'Sin observaciones.' }}</p>
+                        </div>
+                        @endcan
                     </div>
                 </div>
 
@@ -82,19 +88,15 @@
                             </div>
                             @if($file->getHtmlContent())
                                 <div class="mt-4">
-                                    <h5>Document Content Preview:</h5>
-                                    <div class="bg-white p-4 border rounded" style="max-height: 800px; overflow-y: auto;">
+                                    <h5>Word Document Content:</h5>
+                                    <div class="bg-white p-4 border rounded" style="max-height: 600px; overflow-y: auto;">
                                         {!! $file->getHtmlContent() !!}
                                     </div>
                                 </div>
                             @endif
                         </div>
                     @endif
-                </div>
-            </div>
-        </div>
 
-        @if($file->versions->count() > 0)
             <div class="card">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Previous Versions</h5>
@@ -143,7 +145,6 @@
                     @endif
                 </div>
             </div>
-        @endif
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
