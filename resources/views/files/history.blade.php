@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>File Version History</title>
+    <title>Historial de Versiones del Archivo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
@@ -59,12 +59,12 @@
     <div class="container py-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h1>Version History</h1>
+                <h1>Historial de Versiones</h1>
                 <h5 class="text-muted">{{ $parentFile->original_name }}</h5>
             </div>
             <div>
-                <a href="{{ route('files.show', $parentFile->id) }}" class="btn btn-secondary">Back to File</a>
-                <a href="{{ route('files.index') }}" class="btn btn-outline-secondary">All Files</a>
+                <a href="{{ route('files.show', $parentFile->id) }}" class="btn btn-secondary">Volver al Archivo</a>
+                <a href="{{ route('files.index') }}" class="btn btn-outline-secondary">Todos los Archivos</a>
             </div>
         </div>
 
@@ -83,34 +83,34 @@
         <div class="card mb-4">
             <div class="card-header bg-white">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Compare Versions</h5>
+                    <h5 class="mb-0">Comparar Versiones</h5>
                 </div>
             </div>
             <div class="card-body">
                 <form action="{{ route('files.compare') }}" method="POST" class="row g-3">
                     @csrf
                     <div class="col-md-5">
-                        <label for="version1" class="form-label">First Version</label>
+                        <label for="version1" class="form-label">Primera Versión</label>
                         <select name="version1" id="version1" class="form-select" required>
                             @foreach($versions as $version)
                                 <option value="{{ $version->id }}" {{ $version->id == $file->id ? 'selected' : '' }}>
-                                    Version {{ $version->version }} ({{ $version->created_at->format('Y-m-d H:i') }})
+                                    Versión {{ $version->version }} ({{ $version->created_at->format('Y-m-d H:i') }})
                                 </option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-md-5">
-                        <label for="version2" class="form-label">Second Version</label>
+                        <label for="version2" class="form-label">Segunda Versión</label>
                         <select name="version2" id="version2" class="form-select" required>
                             @foreach($versions as $version)
                                 <option value="{{ $version->id }}" {{ ($version->id != $file->id && $loop->first) ? 'selected' : '' }}>
-                                    Version {{ $version->version }} ({{ $version->created_at->format('Y-m-d H:i') }})
+                                    Versión {{ $version->version }} ({{ $version->created_at->format('Y-m-d H:i') }})
                                 </option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary w-100">Compare</button>
+                        <button type="submit" class="btn btn-primary w-100">Comparar</button>
                     </div>
                 </form>
             </div>
@@ -118,7 +118,7 @@
 
         <div class="card">
             <div class="card-header bg-white">
-                <h5 class="mb-0">All Versions</h5>
+                <h5 class="mb-0">Todas las Versiones</h5>
             </div>
             <div class="card-body">
                 <div class="version-timeline">
@@ -130,38 +130,41 @@
                             <div class="row">
                                 <div class="col-md-8">
                                     <h5>
-                                        Version {{ $version->version }}
-                                        @if($version->id == $parentFile->id)
+                                        Versión {{ $version->version }}
+                                        @if($version->id == $versions->min('id'))
                                             <span class="badge bg-primary">Original</span>
                                         @endif
-                                        @if($version->id == $file->id)
-                                            <span class="badge bg-success">Current</span>
+                                        @if($version->id == $versions->max('id'))
+                                            <span class="badge bg-success">Actual</span>
                                         @endif
                                     </h5>
                                     <p class="version-date">
                                         <i class="bi bi-calendar"></i> {{ $version->created_at->format('F j, Y, g:i a') }}
                                     </p>
                                     <p>
-                                        <strong>Size:</strong> {{ number_format($version->size / 1024, 2) }} KB
-                                        <strong class="ms-3">Type:</strong> {{ $version->mime_type }}
+                                        <strong>Tamaño:</strong> {{ number_format($version->size / 1024, 2) }} KB
+                                        <strong class="ms-3">Tipo:</strong> {{ $version->mime_type }}
                                     </p>
-                                    <p>{{ $version->description ?? 'No description provided.' }}</p>
+                                    <p>{{ $version->description ?? 'No se proporcionó descripción.' }}</p>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="version-actions d-flex flex-column gap-2">
                                         <a href="{{ route('files.versions.show', $version->id) }}" class="btn btn-sm btn-info">
-                                            <i class="bi bi-eye"></i> View This Version
+                                            <i class="bi bi-eye"></i> Ver Detalles de esta versión
+                                        </a>
+                                        <a href="{{ route('files.show', $version->id) }}" class="btn btn-sm btn-info">
+                                            <i class="bi bi-eye"></i> Ver Esta Versión
                                         </a>
                                         <a href="{{ Storage::url($version->path) }}" class="btn btn-sm btn-primary" target="_blank">
-                                            <i class="bi bi-download"></i> Download
+                                            <i class="bi bi-download"></i> Descargar
                                         </a>
                                         @if($version->id != $file->id && $version->id != $parentFile->id)
                                             @can('edit files')
                                                 <form action="{{ route('files.versions.restore', $version->id) }}" method="POST">
                                                     @csrf
                                                     <button type="submit" class="btn btn-sm btn-warning w-100" 
-                                                        onclick="return confirm('Are you sure you want to restore this version?')">
-                                                        <i class="bi bi-arrow-counterclockwise"></i> Restore This Version
+                                                        onclick="return confirm('¿Está seguro que desea restaurar esta versión?')">
+                                                        <i class="bi bi-arrow-counterclockwise"></i> Restaurar Esta Versión
                                                     </button>
                                                 </form>
                                             @endcan

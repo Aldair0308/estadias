@@ -4,15 +4,15 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>File Management</title>
+    <title>Gestión de Archivos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body class="bg-light">
     <div class="container py-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>File Management</h1>
-            <a href="{{ route('files.create') }}" class="btn btn-primary">Upload New File</a>
+            <h1>Gestión de Archivos</h1>
+            <a href="{{ route('files.create') }}" class="btn btn-primary">Subir Nuevo Archivo</a>
         </div>
 
         @if(session('success'))
@@ -26,12 +26,12 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>File Name</th>
-                            <th>Type</th>
-                            <th>Size</th>
-                            <th>Versions</th>
-                            <th>Last Updated</th>
-                            <th>Actions</th>
+                            <th>Nombre del Archivo</th>
+                            <th>Tipo</th>
+                            <th>Tamaño</th>
+                            <th>Versiones</th>
+                            <th>Última Actualización</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -44,10 +44,10 @@
                                 <td>{{ $file->updated_at->format('Y-m-d H:i') }}</td>
                                 <td>
                                     <div class="btn-group">
-                                        <a href="{{ route('files.show', $file->id) }}" class="btn btn-sm btn-info">View</a>
+                                        <a href="{{ route('files.show', $file->id) }}" class="btn btn-sm btn-info">Ver</a>
                                         @can('edit files')
                                         <a href="{{ route('files.edit', $file->id) }}"
-                                            class="btn btn-sm btn-warning">Edit</a>
+                                            class="btn btn-sm btn-warning">Editar</a>
                                         @endcan
                                         @can('delete files')
                                         <form action="{{ route('files.destroy', $file->id) }}" method="POST"
@@ -55,7 +55,7 @@
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-danger"
-                                                onclick="return confirm('Are you sure you want to delete this file?')">Delete</button>
+                                                onclick="return confirm('¿Está seguro que desea eliminar este archivo?')">Eliminar</button>
                                         </form>
                                         @endcan
                                     </div>

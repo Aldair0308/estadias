@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Upload New File</title>
+    <title>Subir Nuevo Archivo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .file-type-info {
@@ -28,8 +28,8 @@
 <body class="bg-light">
     <div class="container py-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>Upload New File</h1>
-            <a href="{{ route('files.index') }}" class="btn btn-secondary">Back to Files</a>
+            <h1>Subir Nuevo Archivo</h1>
+            <a href="{{ route('files.index') }}" class="btn btn-secondary">Volver a Archivos</a>
         </div>
 
         @if($errors->any())
@@ -44,43 +44,43 @@
 
         <div class="card">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">File Upload Form</h5>
+                <h5 class="mb-0">Formulario de Carga de Archivos</h5>
             </div>
             <div class="card-body">
                 <form action="{{ route('files.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="mb-3">
-                        <label for="file" class="form-label">Select File (PDF, Excel, or Word)</label>
+                        <label for="file" class="form-label">Seleccionar Archivo (PDF, Excel o Word)</label>
                         <input type="file" class="form-control" id="file" name="file" accept=".pdf,.xls,.xlsx,.doc,.docx,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required>
-                        <div class="form-text">Maximum file size: 10MB</div>
+                        <div class="form-text">Tamaño máximo del archivo: 10MB</div>
                     </div>
                     <div class="mb-3">
-                        <label for="description" class="form-label">Description (Optional)</label>
-                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="Enter a description for this file">{{ old('description') }}</textarea>
+                        <label for="description" class="form-label">Descripción (Opcional)</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="Ingrese una descripción para este archivo">{{ old('description') }}</textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary">Upload File</button>
+                    <button type="submit" class="btn btn-primary">Subir Archivo</button>
                 </form>
 
                 <div class="row mt-4">
                     <div class="col-md-4">
                         <div class="file-type-info pdf-info">
-                            <h5><i class="bi bi-file-earmark-pdf"></i> PDF Files</h5>
-                            <p>PDF files will be stored securely and can be previewed directly in the browser.</p>
-                            <p>Recommended for documents that need to maintain formatting.</p>
+                            <h5><i class="bi bi-file-earmark-pdf"></i> Archivos PDF</h5>
+                            <p>Los archivos PDF se almacenarán de forma segura y se pueden previsualizar directamente en el navegador.</p>
+                            <p>Recomendado para documentos que necesitan mantener el formato.</p>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="file-type-info excel-info">
-                            <h5><i class="bi bi-file-earmark-excel"></i> Excel Files</h5>
-                            <p>Excel files (.xls, .xlsx) will be stored securely and can be previewed using Microsoft Office Online.</p>
-                            <p>Recommended for data that needs to be analyzed or manipulated.</p>
+                            <h5><i class="bi bi-file-earmark-excel"></i> Archivos Excel</h5>
+                            <p>Los archivos Excel (.xls, .xlsx) se almacenarán de forma segura y se pueden previsualizar usando Microsoft Office Online.</p>
+                            <p>Recomendado para datos que necesitan ser analizados o manipulados.</p>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="file-type-info word-info">
-                            <h5><i class="bi bi-file-earmark-word"></i> Word Files</h5>
-                            <p>Word files (.doc, .docx) will be stored securely and can be edited using Microsoft Office Online.</p>
-                            <p>Recommended for text documents that require editing.</p>
+                            <h5><i class="bi bi-file-earmark-word"></i> Archivos Word</h5>
+                            <p>Los archivos Word (.doc, .docx) se almacenarán de forma segura y se pueden editar usando Microsoft Office Online.</p>
+                            <p>Recomendado para documentos de texto que requieren edición.</p>
                         </div>
                     </div>
                 </div>
@@ -90,7 +90,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Simple client-side validation
+        // Validación simple del lado del cliente
         document.querySelector('form').addEventListener('submit', function(e) {
             const fileInput = document.getElementById('file');
             const file = fileInput.files[0];
@@ -107,12 +107,12 @@
                 
                 if (!validTypes.includes(fileType)) {
                     e.preventDefault();
-                    alert('Please select only PDF, Excel, or Word files.');
+                    alert('Por favor, seleccione solo archivos PDF, Excel o Word.');
                 }
                 
-                if (file.size > 10 * 1024 * 1024) { // 10MB in bytes
+                if (file.size > 10 * 1024 * 1024) { // 10MB en bytes
                     e.preventDefault();
-                    alert('File size must be less than 10MB.');
+                    alert('El tamaño del archivo debe ser menor a 10MB.');
                 }
             }
         });
