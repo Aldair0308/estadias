@@ -80,6 +80,14 @@
                             <div class="alert alert-info">
                                 <p class="mb-0">Este es un documento Word. Puedes descargarlo y abrirlo con Microsoft Word o software compatible.</p>
                             </div>
+                            @if($wordPreview)
+                                <div class="mt-4">
+                                    <h5>Vista Previa del Contenido Word:</h5>
+                                    <div class="document-preview" style="max-height: 500px; overflow-y: auto; padding: 20px; background-color: white; border: 1px solid #dee2e6; border-radius: 4px;">
+                                        {!! $wordPreview !!}
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     @endif
                 </div>

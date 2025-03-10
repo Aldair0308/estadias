@@ -40,7 +40,7 @@ class FileController extends Controller
         $extension = $file->getClientOriginalExtension();
         $name = Str::random(40) . '.' . $extension;
         $path = $file->storeAs('files', $name, 'public');
-        
+
         // Create the file record
         File::create([
             'name' => $name,
@@ -58,6 +58,7 @@ class FileController extends Controller
     {
         $file = File::with('versions')->findOrFail($id);
         $excelPreview = null;
+        $wordPreview = null;
 
         if ($file->isExcel()) {
             try {
@@ -71,8 +72,15 @@ class FileController extends Controller
             }
         }
 
-        return view('files.show', compact('file', 'excelPreview'));
+        if ($file->isWord()) {
+            try {
+                $wordPreview = $file->getHtmlContent();
+            } catch (\Exception $e) {
+                \Log::error('Word preview error: ' . $e->getMessage());
+            }
+        }
 
+        return view('files.show', compact('file', 'excelPreview', 'wordPreview'));
     }
 
     public function edit(string $id)
@@ -90,22 +98,22 @@ class FileController extends Controller
         ]);
 
         $oldFile = File::findOrFail($id);
-        
+
         // If a new file is uploaded
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            
+
             // Check if the file content matches any existing version
             $newContent = file_get_contents($file->getRealPath());
             $existingVersions = File::where('parent_id', $id)->get();
-            
+
             foreach ($existingVersions as $version) {
                 $versionContent = Storage::disk('public')->get($version->path);
                 if ($newContent === $versionContent) {
                     return back()->withErrors(['file' => 'This file content already exists in version created at ' . $version->created_at]);
                 }
             }
-            
+
             $extension = $file->getClientOriginalExtension();
             $name = Str::random(40) . '.' . $extension;
             $path = $file->storeAs('files', $name, 'public');
@@ -130,7 +138,7 @@ class FileController extends Controller
                 'description' => $request->description,
                 'observations' => $request->observations
             ]);
-            
+
             return redirect()->route('files.index')->with('success', 'File information updated successfully.');
         }
     }
@@ -138,12 +146,12 @@ class FileController extends Controller
     public function destroy(string $id)
     {
         $file = File::findOrFail($id);
-        
+
         // Delete the file from storage
         if (Storage::disk('public')->exists($file->path)) {
             Storage::disk('public')->delete($file->path);
         }
-        
+
         // Delete all versions
         if (!$file->parent_id) {
             foreach ($file->versions as $version) {
@@ -153,9 +161,9 @@ class FileController extends Controller
                 $version->delete();
             }
         }
-        
+
         $file->delete();
-        
+
         return redirect()->route('files.index')->with('success', 'File deleted successfully.');
     }
 
