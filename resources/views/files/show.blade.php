@@ -87,6 +87,7 @@
                                         {!! $wordPreview !!}
                                     </div>
                                 </div>
+                                <x-editor-word :document-content="$wordPreview" :document-id="$file->id" />
                             @endif
                         </div>
                     @endif

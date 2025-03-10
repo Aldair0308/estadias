@@ -98,6 +98,13 @@ class File extends Model
             return null;
         }
 
+        try {
+            $filePath = Storage::path('public/' . $this->path);
+            return \App\View\Components\EditorWord::convertWordToHtml($filePath);
+        } catch (\Exception $e) {
+            \Log::error('Word preview error: ' . $e->getMessage());
+            return null;
+        }
         $filePath = Storage::disk('public')->path($this->path);
         $phpWord = \PhpOffice\PhpWord\IOFactory::load($filePath);
 
