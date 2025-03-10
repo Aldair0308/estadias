@@ -61,6 +61,10 @@
     <script src="https://cdn.ckeditor.com/4.16.2/full/ckeditor.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Disable version check and auto inline
+            CKEDITOR.disableAutoInline = true;
+            CKEDITOR.config.versionCheck = false;
+
             // Initialize CKEditor
             var editor = CKEDITOR.replace('wordEditor', {
                 height: '400px',
