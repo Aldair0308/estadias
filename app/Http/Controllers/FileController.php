@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\File;
+use App\Models\Template;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -25,15 +26,45 @@ class FileController extends Controller
 
     public function create()
     {
-        return view('files.create');
+        $templates = Template::whereNull('parent_id')->with('versions')->get();
+        return view('files.create', compact('templates'));
     }
 
     public function store(Request $request)
     {
+        if ($request->has('create_from_template')) {
+            $request->validate([
+                'template_id' => 'required|exists:templates,id',
+                'custom_title' => 'required|string|max:255',
+                'description' => 'nullable|string|max:1000'
+            ]);
+
+            $template = Template::findOrFail($request->template_id);
+            $templateContent = Storage::disk('public')->get($template->path);
+
+            $extension = pathinfo($template->original_name, PATHINFO_EXTENSION);
+            $name = Str::random(40) . '.' . $extension;
+            $path = 'files/' . $name;
+
+            Storage::disk('public')->put($path, $templateContent);
+
+            File::create([
+                'name' => $name,
+                'original_name' => $request->custom_title . '.' . $extension,
+                'path' => $path,
+                'mime_type' => $template->mime_type,
+                'size' => Storage::disk('public')->size($path),
+                'description' => $request->description
+            ]);
+
+            return redirect()->route('files.index')->with('success', 'File created from template successfully.');
+        }
+
         $request->validate([
             'file' => 'required|file|mimes:pdf,xls,xlsx,doc,docx|max:10240',
             'description' => 'nullable|string|max:1000'
         ]);
+
 
         $file = $request->file('file');
         $originalName = $file->getClientOriginalName();

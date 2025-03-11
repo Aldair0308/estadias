@@ -42,9 +42,50 @@
             </div>
         @endif
 
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Crear Archivo desde Plantilla</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ route('files.store') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="create_from_template" value="1">
+                    <div class="mb-3">
+                        <label for="template_id" class="form-label">Seleccionar Plantilla</label>
+                        <select class="form-select" id="template_id" name="template_id" required>
+                            <option value="">Seleccione una plantilla...</option>
+                            @foreach($templates as $template)
+                                @if($template->versions->count() > 0)
+                                    @php
+                                        $latestVersion = $template->versions->sortByDesc('created_at')->first();
+                                    @endphp
+                                    <option value="{{ $latestVersion->id }}">
+                                        {{ $template->original_name }} (Última versión)
+                                    </option>
+                                @else
+                                    <option value="{{ $template->id }}">
+                                        {{ $template->original_name }}
+                                    </option>
+                                @endif
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="custom_title" class="form-label">Título Personalizado</label>
+                        <input type="text" class="form-control" id="custom_title" name="custom_title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Descripción (Opcional)</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="Ingrese una descripción para este archivo">{{ old('description') }}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Crear desde Plantilla</button>
+                </form>
+            </div>
+        </div>
+
         <div class="card">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Formulario de Carga de Archivos</h5>
+                <h5 class="mb-0">Subir Nuevo Archivo</h5>
             </div>
             <div class="card-body">
                 <form action="{{ route('files.store') }}" method="POST" enctype="multipart/form-data">
