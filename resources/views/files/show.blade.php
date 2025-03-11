@@ -36,6 +36,8 @@
                     <div class="col-md-6">
                         <p><strong>Descripción:</strong></p>
                         <p>{{ $file->description ?? 'No se proporcionó descripción.' }}</p>
+                        <p><strong>Observaciones:</strong></p>
+                        <p>{{ $file->observations ?? 'No se proporcionó observaciones.' }}</p>
                     </div>
                 </div>
 
