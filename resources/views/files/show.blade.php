@@ -88,7 +88,11 @@
                                         {!! $wordPreview !!}
                                     </div>
                                 </div>
-                                <x-editor-word :document-content="$wordPreview" :document-id="$file->id" />
+                                <div class="mt-3">
+                                    <a href="{{ route('files.write', $file->id) }}" class="btn btn-success">
+                                        <i class="bi bi-pencil-square"></i> Editar Documento
+                                    </a>
+                                </div>
                             @endif
                         </div>
                     @endif

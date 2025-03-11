@@ -194,6 +194,25 @@ class FileController extends Controller
 
         abort(404, 'Preview not available for this file type');
     }
+    
+    public function write(string $id)
+    {
+        $file = File::findOrFail($id);
+        
+        if (!$file->isWord()) {
+            return redirect()->route('files.show', $file->id)
+                ->with('error', 'Solo los documentos Word pueden ser editados con esta herramienta.');
+        }
+        
+        try {
+            $wordContent = $file->getHtmlContent();
+            return view('files.write', compact('file', 'wordContent'));
+        } catch (\Exception $e) {
+            \Log::error('Error loading Word content for editing: ' . $e->getMessage());
+            return redirect()->route('files.show', $file->id)
+                ->with('error', 'No se pudo cargar el contenido del documento para edición.');
+        }
+    }
 
     public function updateContent(Request $request, string $id)
     {
