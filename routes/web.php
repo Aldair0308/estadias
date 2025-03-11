@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\TemplateController;
+use App\Http\Controllers\TemplateVersionController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -26,6 +28,15 @@ Route::get('/files/{file}/write', [FileController::class, 'write'])->name('files
 Route::post('/files/compare', [App\Http\Controllers\FileVersionController::class, 'compare'])->name('files.compare');
 Route::get('/files/versions/{version}', [App\Http\Controllers\FileVersionController::class, 'show'])->name('files.versions.show');
 Route::post('/files/versions/{version}/restore', [App\Http\Controllers\FileVersionController::class, 'restore'])->name('files.versions.restore');
+
+// Templates routes
+Route::resource('templates', TemplateController::class);
+Route::post('/templates/{template}/content', [TemplateController::class, 'updateContent'])->name('templates.content.update');
+Route::get('/templates/{template}/history', [TemplateController::class, 'history'])->name('templates.history');
+Route::get('/templates/{template}/write', [TemplateController::class, 'write'])->name('templates.write');
+Route::post('/templates/compare', [TemplateVersionController::class, 'compare'])->name('templates.compare');
+Route::get('/templates/versions/{version}', [TemplateVersionController::class, 'show'])->name('templates.versions.show');
+Route::post('/templates/versions/{version}/restore', [TemplateVersionController::class, 'restore'])->name('templates.versions.restore');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
