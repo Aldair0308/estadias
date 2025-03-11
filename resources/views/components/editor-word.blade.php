@@ -48,7 +48,7 @@
                 <button type="button" class="btn btn-sm btn-outline-secondary" id="toggleFullscreen">
                     <i class="bi bi-arrows-fullscreen"></i> Pantalla Completa
                 </button>
-                <button type="button" class="btn btn-sm btn-outline-primary" id="saveDocument" data-update-url="{{ route('files.content.update', ['file' => $documentId]) }}">
+                <button type="button" class="btn btn-sm btn-outline-primary" id="saveDocument" data-update-url="{{ Route::is('templates.*') ? route('templates.content.update', ['template' => $documentId]) : route('files.content.update', ['file' => $documentId]) }}">
                     <i class="bi bi-save"></i> Guardar Cambios
                 </button>
             </div>
