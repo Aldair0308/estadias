@@ -48,7 +48,7 @@
                 <button type="button" class="btn btn-sm btn-outline-secondary" id="toggleFullscreen">
                     <i class="bi bi-arrows-fullscreen"></i> Pantalla Completa
                 </button>
-                <button type="button" class="btn btn-sm btn-outline-primary" id="saveDocument">
+                <button type="button" class="btn btn-sm btn-outline-primary" id="saveDocument" data-update-url="{{ route('files.content.update', ['file' => $documentId]) }}">
                     <i class="bi bi-save"></i> Guardar Cambios
                 </button>
             </div>
@@ -61,108 +61,117 @@
     <script src="https://cdn.ckeditor.com/4.16.2/full/ckeditor.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Disable version check and auto inline
-            CKEDITOR.disableAutoInline = true;
-            CKEDITOR.config.versionCheck = false;
+            let editor = null;
 
-            // Initialize CKEditor
-            var editor = CKEDITOR.replace('wordEditor', {
-                height: '400px',
-                removePlugins: 'elementspath,resize',
-                toolbarGroups: [
-                    { name: 'document', groups: ['mode', 'document', 'doctools'] },
-                    { name: 'clipboard', groups: ['clipboard', 'undo'] },
-                    { name: 'editing', groups: ['find', 'selection', 'spellchecker', 'editing'] },
-                    { name: 'forms', groups: ['forms'] },
-                    '/',
-                    { name: 'basicstyles', groups: ['basicstyles', 'cleanup'] },
-                    { name: 'paragraph', groups: ['list', 'indent', 'blocks', 'align', 'bidi', 'paragraph'] },
-                    { name: 'links', groups: ['links'] },
-                    { name: 'insert', groups: ['insert'] },
-                    '/',
-                    { name: 'styles', groups: ['styles'] },
-                    { name: 'colors', groups: ['colors'] },
-                    { name: 'tools', groups: ['tools'] },
-                    { name: 'others', groups: ['others'] },
-                ]
-            });
+            function initializeEditor() {
+                // Disable version check and auto inline
+                CKEDITOR.disableAutoInline = true;
+                CKEDITOR.config.versionCheck = false;
 
-            // Fullscreen toggle functionality
-            const wrapper = document.getElementById('wordEditorWrapper');
-            const toggleBtn = document.getElementById('toggleFullscreen');
+                try {
+                    // Remove any existing instance
+                    if (CKEDITOR.instances.wordEditor) {
+                        CKEDITOR.instances.wordEditor.destroy();
+                    }
 
-            toggleBtn.addEventListener('click', function() {
-                wrapper.classList.toggle('word-editor-fullscreen');
-                if (wrapper.classList.contains('word-editor-fullscreen')) {
-                    editor.resize('100%', wrapper.offsetHeight - 120);
-                } else {
-                    editor.resize('100%', '400');
+                    editor = CKEDITOR.replace('wordEditor', {
+                        readOnly: false,
+                        allowedContent: true,
+                        height: '400px',
+                        removePlugins: 'elementspath,resize',
+                        toolbarGroups: [
+                            { name: 'document', groups: ['mode', 'document', 'doctools'] },
+                            { name: 'clipboard', groups: ['clipboard', 'undo'] },
+                            { name: 'editing', groups: ['find', 'selection', 'spellchecker', 'editing'] },
+                            { name: 'forms', groups: ['forms'] },
+                            '/',
+                            { name: 'basicstyles', groups: ['basicstyles', 'cleanup'] },
+                            { name: 'paragraph', groups: ['list', 'indent', 'blocks', 'align', 'bidi', 'paragraph'] },
+                            { name: 'links', groups: ['links'] },
+                            { name: 'insert', groups: ['insert'] },
+                            '/',
+                            { name: 'styles', groups: ['styles'] },
+                            { name: 'colors', groups: ['colors'] },
+                            { name: 'tools', groups: ['tools'] },
+                            { name: 'others', groups: ['others'] },
+                        ]
+                    });
+
+                    // Set initial content after editor is ready
+                    editor.on('instanceReady', function() {
+                        try {
+                            @if(!empty($documentContent))
+                                editor.setData({!! json_encode($documentContent) !!});
+                            @else
+                                editor.setData('<p>No hay vista previa disponible para este documento. Puede descargar el archivo para verlo en Microsoft Word.</p>');
+                            @endif
+                        } catch (error) {
+                            console.error('Error loading Word content:', error);
+                            editor.setData('<p>Error al cargar el contenido del documento. Puede descargar el archivo para verlo en Microsoft Word.</p>');
+                        }
+                    });
+
+                    return editor;
+                } catch (error) {
+                    console.error('Error initializing CKEditor:', error);
+                    return null;
                 }
-            });
-
-            // Save functionality can be implemented here
-            const saveBtn = document.getElementById('saveDocument');
-            saveBtn.addEventListener('click', function() {
-                const content = editor.getData();
-                // You can implement the save functionality here
-                console.log('Document content saved:', content);
-            });
-        });
-    </script>
-</div>
-    </div>
-
-    <script src="https://cdn.ckeditor.com/4.16.2/full/ckeditor.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize CKEditor
-            var editor = CKEDITOR.replace('wordEditor', {
-                height: '400px',
-                removePlugins: 'elementspath,resize',
-                toolbarGroups: [
-                    { name: 'document', groups: ['mode', 'document', 'doctools'] },
-                    { name: 'clipboard', groups: ['clipboard', 'undo'] },
-                    { name: 'editing', groups: ['find', 'selection', 'spellchecker', 'editing'] },
-                    { name: 'forms', groups: ['forms'] },
-                    '/',
-                    { name: 'basicstyles', groups: ['basicstyles', 'cleanup'] },
-                    { name: 'paragraph', groups: ['list', 'indent', 'blocks', 'align', 'bidi', 'paragraph'] },
-                    { name: 'links', groups: ['links'] },
-                    { name: 'insert', groups: ['insert'] },
-                    '/',
-                    { name: 'styles', groups: ['styles'] },
-                    { name: 'colors', groups: ['colors'] },
-                    { name: 'tools', groups: ['tools'] },
-                    { name: 'others', groups: ['others'] },
-                ]
-            });
-
-            // Fullscreen toggle functionality
-            const wrapper = document.getElementById('wordEditorWrapper');
-            const toggleBtn = document.getElementById('toggleFullscreen');
-
-            toggleBtn.addEventListener('click', function() {
-                wrapper.classList.toggle('word-editor-fullscreen');
-                if (wrapper.classList.contains('word-editor-fullscreen')) {
-                    editor.resize('100%', wrapper.offsetHeight - 120);
-                } else {
-                    editor.resize('100%', '400');
-                }
-            });
-
-            // Use the wordContent prop passed from the parent component
-            // The HTML content is already processed by PhpWord in the controller
-            try {
-                @if(!empty($wordContent))
-                    editor.setData({!! json_encode($wordContent) !!});
-                @else
-                    // Display a message if no content is available
-                    editor.setData('<p>No hay vista previa disponible para este documento. Puede descargar el archivo para verlo en Microsoft Word.</p>');
-                @endif
-            } catch (error) {
-                console.error('Error loading Word content:', error);
-                editor.setData('<p>Error al cargar el contenido del documento. Puede descargar el archivo para verlo en Microsoft Word.</p>');
             }
+
+            // Initialize the editor
+            editor = initializeEditor();
+
+            // Fullscreen toggle functionality
+            const wrapper = document.getElementById('wordEditorWrapper');
+            const toggleBtn = document.getElementById('toggleFullscreen');
+
+            toggleBtn.addEventListener('click', function() {
+                if (!editor) {
+                    console.error('Editor not initialized');
+                    return;
+                }
+
+                wrapper.classList.toggle('word-editor-fullscreen');
+                if (wrapper.classList.contains('word-editor-fullscreen')) {
+                    editor.resize('100%', wrapper.offsetHeight - 120);
+                } else {
+                    editor.resize('100%', '400');
+                }
+            });
+
+            // Save functionality implementation
+            const saveBtn = document.getElementById('saveDocument');
+            saveBtn.addEventListener('click', async function() {
+                if (!editor || !editor.getData) {
+                    alert('Error: Editor no está inicializado correctamente. Por favor, recargue la página.');
+                    return;
+                }
+
+                try {
+                    const content = editor.getData();
+                    const updateUrl = document.getElementById('saveDocument').dataset.updateUrl;
+                    const response = await fetch(updateUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({ content: content })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => null);
+                        throw new Error(errorData?.error || 'Error al guardar el documento');
+                    }
+
+                    const data = await response.json();
+                    alert('Documento guardado exitosamente');
+                    window.location.reload();
+                } catch (error) {
+                    console.error('Error saving document:', error);
+                    alert(error.message || 'Error al guardar el documento');
+                }
+            });
         });
     </script>
 </div>

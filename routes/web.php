@@ -20,6 +20,7 @@ Route::get('/', function () {
 });
 
 Route::resource('files', FileController::class);
+Route::post('/files/{file}/content', [FileController::class, 'updateContent'])->name('files.content.update');
 Route::get('/files/{file}/history', [FileController::class, 'history'])->name('files.history');
 Route::post('/files/compare', [App\Http\Controllers\FileVersionController::class, 'compare'])->name('files.compare');
 Route::get('/files/versions/{version}', [App\Http\Controllers\FileVersionController::class, 'show'])->name('files.versions.show');

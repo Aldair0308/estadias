@@ -194,4 +194,75 @@ class FileController extends Controller
 
         abort(404, 'Preview not available for this file type');
     }
+
+    public function updateContent(Request $request, string $id)
+    {
+        $file = File::findOrFail($id);
+        
+        if (!$file->isWord()) {
+            return response()->json(['error' => 'Only Word documents can be updated'], 400);
+        }
+
+        $content = $request->input('content');
+        if (empty($content)) {
+            return response()->json(['error' => 'Content cannot be empty'], 400);
+        }
+
+        try {
+            // Create a new PHPWord instance
+            $phpWord = new \PhpOffice\PhpWord\PhpWord();
+            
+            // Create a new section in the document
+            $section = $phpWord->addSection();
+            
+            // HTML to Word conversion
+            \PhpOffice\PhpWord\Shared\Html::addHtml($section, $content);
+
+            // Create temporary file
+            $tempFile = tempnam(sys_get_temp_dir(), 'word');
+            $objWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
+            $objWriter->save($tempFile);
+
+            // Read the content of the temp file
+            $newContent = file_get_contents($tempFile);
+            unlink($tempFile); // Clean up temp file
+
+            // Check for duplicate content in versions
+            $existingVersions = File::where('parent_id', $id)->get();
+            foreach ($existingVersions as $version) {
+                $versionContent = Storage::disk('public')->get($version->path);
+                if ($newContent === $versionContent) {
+                    return response()->json([
+                        'error' => 'This content already exists in version created at ' . $version->created_at
+                    ], 400);
+                }
+            }
+
+            // Generate new filename
+            $name = Str::random(40) . '.docx';
+            $path = 'files/' . $name;
+
+            // Save the new version
+            Storage::disk('public')->put($path, $newContent);
+
+            // Create new version in database
+            File::create([
+                'name' => $name,
+                'original_name' => $file->original_name,
+                'path' => $path,
+                'mime_type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'size' => Storage::disk('public')->size($path),
+                'version' => $file->version + 1,
+                'parent_id' => $file->parent_id ?? $file->id,
+                'description' => $file->description,
+                'observations' => 'Content updated through editor'
+            ]);
+
+            return response()->json(['success' => true, 'message' => 'Document updated successfully']);
+
+        } catch (\Exception $e) {
+            \Log::error('Error updating document content: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to update document content'], 500);
+        }
+    }
 }
