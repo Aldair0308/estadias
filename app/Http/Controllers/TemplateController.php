@@ -84,7 +84,13 @@ class TemplateController extends Controller
                 \Log::debug('Error trace: ' . $e->getTraceAsString());
                 // Set wordPreview to null and add an error message that can be displayed in the view
                 $wordPreview = null;
-                session()->flash('error', 'No se pudo generar la vista previa del documento Word: ' . $e->getMessage());
+                
+                // Provide a more user-friendly message for EMF image errors
+                if (strpos($e->getMessage(), 'Invalid image') !== false && strpos($e->getMessage(), '.emf') !== false) {
+                    session()->flash('error', 'Este documento contiene imágenes en formato EMF que no pueden ser mostradas en la vista previa. Por favor, descargue el documento para verlo correctamente.');
+                } else {
+                    session()->flash('error', 'No se pudo generar la vista previa del documento Word: ' . $e->getMessage());
+                }
             }
         }
 

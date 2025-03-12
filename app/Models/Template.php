@@ -92,6 +92,158 @@ class Template extends Model
     }
 
     /**
+     * Extract and convert EMF images from a Word document
+     * 
+     * @param string $filePath Path to the Word document
+     * @param string $outputDir Directory to save converted images
+     * @return void
+     */
+    protected function extractAndConvertEmfImages($filePath, $outputDir)
+    {
+        try {
+            \Log::debug('Extracting EMF images from Word document: ' . $filePath);
+            
+            // Create a temporary directory to extract the DOCX contents
+            $tempDir = storage_path('app/temp_' . uniqid());
+            if (!file_exists($tempDir)) {
+                mkdir($tempDir, 0755, true);
+            }
+            
+            // Copy the DOCX file to the temp directory
+            $tempFile = $tempDir . '/' . basename($filePath);
+            copy($filePath, $tempFile);
+            
+            // Extract the DOCX (which is a ZIP file)
+            $zip = new \ZipArchive();
+            if ($zip->open($tempFile) === true) {
+                $zip->extractTo($tempDir);
+                $zip->close();
+                
+                // Look for EMF images in the word/media directory
+                $mediaDir = $tempDir . '/word/media';
+                if (file_exists($mediaDir)) {
+                    $files = scandir($mediaDir);
+                    foreach ($files as $file) {
+                        if (pathinfo($file, PATHINFO_EXTENSION) === 'emf') {
+                            $emfPath = $mediaDir . '/' . $file;
+                            $imageHash = md5_file($emfPath);
+                            $pngPath = $outputDir . '/' . $imageHash . '.png';
+                            
+                            // Convert EMF to PNG using GD or Imagick if available
+                            if (extension_loaded('imagick')) {
+                                $this->convertEmfWithImagick($emfPath, $pngPath);
+                            } else {
+                                // Fallback to a simple placeholder image using GD
+                                $this->createPlaceholderImage($pngPath);
+                            }
+                            
+                            \Log::debug('Converted EMF image: ' . $file . ' to ' . $pngPath);
+                        }
+                    }
+                }
+            }
+            
+            // Clean up
+            $this->recursiveDelete($tempDir);
+            
+        } catch (\Exception $e) {
+            \Log::error('Failed to extract EMF images: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Convert EMF to PNG using ImageMagick
+     * 
+     * @param string $emfPath Path to EMF file
+     * @param string $pngPath Path to save PNG file
+     * @return bool Success status
+     */
+    protected function convertEmfWithImagick($emfPath, $pngPath)
+    {
+        try {
+            $imagick = new \Imagick();
+            $imagick->readImage($emfPath);
+            $imagick->setImageFormat('png');
+            $imagick->writeImage($pngPath);
+            $imagick->clear();
+            $imagick->destroy();
+            return true;
+        } catch (\Exception $e) {
+            \Log::error('ImageMagick conversion failed: ' . $e->getMessage());
+            // Fallback to placeholder
+            $this->createPlaceholderImage($pngPath);
+            return false;
+        }
+    }
+    
+    /**
+     * Create a placeholder image for EMF files that can't be converted
+     * 
+     * @param string $outputPath Path to save placeholder image
+     * @return bool Success status
+     */
+    protected function createPlaceholderImage($outputPath)
+    {
+        try {
+            // Create a simple placeholder image with text
+            $width = 400;
+            $height = 300;
+            $image = imagecreatetruecolor($width, $height);
+            
+            // Set background color (light gray)
+            $bgColor = imagecolorallocate($image, 240, 240, 240);
+            imagefill($image, 0, 0, $bgColor);
+            
+            // Set text color (dark gray)
+            $textColor = imagecolorallocate($image, 80, 80, 80);
+            
+            // Add text
+            $text = "EMF Image (Not Displayed)";
+            $font = 5; // Built-in font
+            
+            // Center the text
+            $textWidth = imagefontwidth($font) * strlen($text);
+            $textHeight = imagefontheight($font);
+            $x = ($width - $textWidth) / 2;
+            $y = ($height - $textHeight) / 2;
+            
+            imagestring($image, $font, $x, $y, $text, $textColor);
+            
+            // Save as PNG
+            imagepng($image, $outputPath);
+            imagedestroy($image);
+            
+            return true;
+        } catch (\Exception $e) {
+            \Log::error('Failed to create placeholder image: ' . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Recursively delete a directory and its contents
+     * 
+     * @param string $dir Directory path
+     * @return void
+     */
+    protected function recursiveDelete($dir)
+    {
+        if (is_dir($dir)) {
+            $objects = scandir($dir);
+            foreach ($objects as $object) {
+                if ($object != "." && $object != "..") {
+                    if (is_dir($dir . "/" . $object)) {
+                        $this->recursiveDelete($dir . "/" . $object);
+                    } else {
+                        unlink($dir . "/" . $object);
+                    }
+                }
+            }
+            rmdir($dir);
+        }
+    }
+    
+    /**
      * Convert Word document to HTML for preview
      */
     public function getHtmlContent()
@@ -136,24 +288,51 @@ class Template extends Model
                 } catch (\Exception $e) {
                     // Check if the error is related to EMF images
                     if (strpos($e->getMessage(), 'Invalid image') !== false && strpos($e->getMessage(), '.emf') !== false) {
-                        \Log::warning('EMF image format detected which is not fully supported. Attempting alternative loading method.');
+                        \Log::warning('EMF image format detected which is not fully supported. Attempting EMF conversion.');
                         
-                        // Use a custom configuration to ignore problematic images
+                        // Extract and convert EMF images from the document
+                        $this->extractAndConvertEmfImages($filePath, $tempImagesDir);
+                        
+                        // Use a custom configuration to handle EMF images
                         $phpWord = new \PhpOffice\PhpWord\PhpWord();
                         $reader = \PhpOffice\PhpWord\IOFactory::createReader('Word2007');
                         
                         // Try to set reader options if the method exists
                         if (method_exists($reader, 'setImageProcessor')) {
-                            $reader->setImageProcessor(function($imageData, $mimeType) {
-                                // Skip EMF images
+                            $reader->setImageProcessor(function($imageData, $mimeType) use ($tempImagesDir) {
+                                // Handle EMF images by replacing with converted PNG
                                 if (strpos($mimeType, 'emf') !== false) {
+                                    // Generate a hash of the image data to find its converted version
+                                    $imageHash = md5($imageData);
+                                    $convertedImagePath = $tempImagesDir . '/' . $imageHash . '.png';
+                                    
+                                    if (file_exists($convertedImagePath)) {
+                                        \Log::debug('Using converted EMF image: ' . $convertedImagePath);
+                                        return file_get_contents($convertedImagePath);
+                                    }
+                                    
+                                    // If conversion failed, create a placeholder image on the fly
+                                    \Log::warning('Converted EMF image not found: ' . $imageHash . '. Creating placeholder.');
+                                    $this->createPlaceholderImage($convertedImagePath);
+                                    if (file_exists($convertedImagePath)) {
+                                        return file_get_contents($convertedImagePath);
+                                    }
                                     return null;
                                 }
                                 return $imageData;
                             });
                         }
                         
-                        $phpWord = $reader->load($filePath);
+                        try {
+                            $phpWord = $reader->load($filePath);
+                        } catch (\Exception $innerException) {
+                            \Log::error('Still failed to load document after EMF conversion: ' . $innerException->getMessage());
+                            // Create a new empty document as fallback
+                            $phpWord = new \PhpOffice\PhpWord\PhpWord();
+                            $section = $phpWord->addSection();
+                            $section->addText('Este documento contiene imágenes en formato EMF que no pueden ser mostradas en la vista previa.');
+                            $section->addText('Por favor, descargue el documento para verlo correctamente.');
+                        }
                     } else {
                         // If it's not an EMF issue, rethrow the exception
                         throw $e;
@@ -174,10 +353,27 @@ class Template extends Model
                 }
                 
                 if (method_exists($htmlWriter, 'setImagesFallback')) {
-                    $htmlWriter->setImagesFallback(function($image) {
-                        // Return placeholder for EMF images
+                    $htmlWriter->setImagesFallback(function($image) use ($tempImagesDir) {
+                        // Handle EMF images by using our converted PNG versions
                         if (isset($image['type']) && strpos($image['type'], 'emf') !== false) {
-                            return '<div class="image-placeholder">[Image not supported]</div>';
+                            // Check if we have a converted version of this EMF image
+                            if (isset($image['data'])) {
+                                $imageHash = md5($image['data']);
+                                $convertedImagePath = $tempImagesDir . '/' . $imageHash . '.png';
+                                
+                                if (file_exists($convertedImagePath)) {
+                                    // Use the converted PNG image
+                                    $imgData = file_get_contents($convertedImagePath);
+                                    $base64 = base64_encode($imgData);
+                                    return '<img src="data:image/png;base64,' . $base64 . '" alt="Converted EMF Image" />';
+                                }
+                            }
+                            
+                            // If no converted image is found, show a warning message
+                            return '<div class="image-placeholder" style="border: 1px solid #ccc; padding: 10px; background-color: #f8f8f8; text-align: center;">' . 
+                                   '<p style="color: #666;">Este documento contiene imágenes en formato EMF que no pueden ser mostradas en la vista previa.</p>' . 
+                                   '<p style="color: #666;">Por favor, descargue el documento para verlo correctamente.</p>' . 
+                                   '</div>';
                         }
                         return null; // Process normally
                     });
