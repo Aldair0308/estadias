@@ -132,7 +132,35 @@ class File extends Model
 
             \Log::debug('Loading Word document...');
             try {
-                $phpWord = \PhpOffice\PhpWord\IOFactory::load($filePath);
+                // Try to load the document with special handling for EMF images
+                try {
+                    $phpWord = \PhpOffice\PhpWord\IOFactory::load($filePath);
+                } catch (\Exception $e) {
+                    // Check if the error is related to EMF images
+                    if (strpos($e->getMessage(), 'Invalid image') !== false && strpos($e->getMessage(), '.emf') !== false) {
+                        \Log::warning('EMF image format detected which is not fully supported. Attempting alternative loading method.');
+                        
+                        // Use a custom configuration to ignore problematic images
+                        $phpWord = new \PhpOffice\PhpWord\PhpWord();
+                        $reader = \PhpOffice\PhpWord\IOFactory::createReader('Word2007');
+                        
+                        // Try to set reader options if the method exists
+                        if (method_exists($reader, 'setImageProcessor')) {
+                            $reader->setImageProcessor(function($imageData, $mimeType) {
+                                // Skip EMF images
+                                if (strpos($mimeType, 'emf') !== false) {
+                                    return null;
+                                }
+                                return $imageData;
+                            });
+                        }
+                        
+                        $phpWord = $reader->load($filePath);
+                    } else {
+                        // If it's not an EMF issue, rethrow the exception
+                        throw $e;
+                    }
+                }
             } catch (\Exception $e) {
                 throw new \Exception('Failed to load Word document: ' . $e->getMessage());
             }
@@ -141,8 +169,21 @@ class File extends Model
             // Configure HTML writer settings
             try {
                 $htmlWriter = new \PhpOffice\PhpWord\Writer\HTML($phpWord);
-                // Images are automatically embedded as base64 in the HTML output
-                // No need to call setEmbedImages as it doesn't exist in this version of the library
+                
+                // Set options to handle problematic images if methods exist
+                if (method_exists($htmlWriter, 'setImagesHandling')) {
+                    $htmlWriter->setImagesHandling('base64');
+                }
+                
+                if (method_exists($htmlWriter, 'setImagesFallback')) {
+                    $htmlWriter->setImagesFallback(function($image) {
+                        // Return placeholder for EMF images
+                        if (isset($image['type']) && strpos($image['type'], 'emf') !== false) {
+                            return '<div class="image-placeholder">[Image not supported]</div>';
+                        }
+                        return null; // Process normally
+                    });
+                }
             } catch (\Exception $e) {
                 throw new \Exception('Failed to configure HTML writer: ' . $e->getMessage());
             }

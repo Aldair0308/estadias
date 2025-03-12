@@ -95,6 +95,12 @@
                                         <i class="bi bi-pencil-square"></i> Editar Documento
                                     </a>
                                 </div>
+                            @elseif(session('error'))
+                                <div class="mt-4">
+                                    <div class="alert alert-danger">
+                                        {{ session('error') }}
+                                    </div>
+                                </div>
                             @endif
                         </div>
                     @endif

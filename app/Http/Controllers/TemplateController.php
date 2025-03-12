@@ -81,6 +81,10 @@ class TemplateController extends Controller
                 $wordPreview = $template->getHtmlContent();
             } catch (\Exception $e) {
                 \Log::error('Word preview error: ' . $e->getMessage());
+                \Log::debug('Error trace: ' . $e->getTraceAsString());
+                // Set wordPreview to null and add an error message that can be displayed in the view
+                $wordPreview = null;
+                session()->flash('error', 'No se pudo generar la vista previa del documento Word: ' . $e->getMessage());
             }
         }
 
