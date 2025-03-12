@@ -95,6 +95,11 @@
                                         <i class="bi bi-pencil-square"></i> Editar Documento
                                     </a>
                                 </div>
+                            @elseif($wordPreviewError)
+                                <div class="alert alert-danger mt-3">
+                                    <h5>Error en la Vista Previa:</h5>
+                                    <p>{{ $wordPreviewError }}</p>
+                                </div>
                             @endif
                         </div>
                     @endif

@@ -86,10 +86,11 @@ class FileController extends Controller
     }
 
     public function show(string $id)
-    {
+    {   
         $file = File::with('versions')->findOrFail($id);
         $excelPreview = null;
         $wordPreview = null;
+        $wordPreviewError = null;
 
         if ($file->isExcel()) {
             try {
@@ -105,13 +106,22 @@ class FileController extends Controller
 
         if ($file->isWord()) {
             try {
+                \Log::debug('Starting Word preview generation for file: ' . $file->original_name);
                 $wordPreview = $file->getHtmlContent();
+                if ($wordPreview === null) {
+                    \Log::error('Word preview generation returned null');
+                    $wordPreviewError = 'Failed to generate Word preview';
+                } else {
+                    \Log::debug('Word preview generated successfully');
+                }
             } catch (\Exception $e) {
-                \Log::error('Word preview error: ' . $e->getMessage());
+                \Log::error('Word preview error in controller: ' . $e->getMessage());
+                \Log::error($e->getTraceAsString());
+                $wordPreviewError = 'Error generating Word preview: ' . $e->getMessage();
             }
         }
 
-        return view('files.show', compact('file', 'excelPreview', 'wordPreview'));
+        return view('files.show', compact('file', 'excelPreview', 'wordPreview', 'wordPreviewError'));
     }
 
     public function edit(string $id)
