@@ -132,7 +132,7 @@
                                     <h5>
                                         Versión {{ $version->version }}
                                         @if($version->id == $versions->min('id'))
-                                            <span class="badge bg-primary">Original</span>
+                                            <span class="badge bg-primary">Inicial</span>
                                         @endif
                                         @if($version->id == $versions->max('id'))
                                             <span class="badge bg-success">Actual</span>

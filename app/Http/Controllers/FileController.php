@@ -20,7 +20,26 @@ class FileController extends Controller
 
     public function index()
     {
-        $files = File::whereNull('parent_id')->with('versions')->get();
+        $query = File::whereNull('parent_id');
+        
+        if (!auth()->user()->hasRole('tutor')) {
+            $query->where('responsible_email', auth()->user()->email);
+        }
+        
+        $files = $query->with(['versions' => function($query) {
+            $query->orderBy('created_at', 'desc');
+        }])->get();
+        
+        // Transform each file to include version count and latest version data
+        $files = $files->map(function($file) {
+            $latestVersion = $file->versions->first();
+            if ($latestVersion) {
+                $latestVersion->versions = $file->versions;
+                return $latestVersion;
+            }
+            return $file;
+        });
+        
         return view('files.index', compact('files'));
     }
 
@@ -221,8 +240,11 @@ class FileController extends Controller
     public function history(string $id)
     {
         $file = File::with('versions')->findOrFail($id);
-        $parentFile = $file;
-        $versions = $file->parent_id ? File::where('id', $file->parent_id)->orWhere('parent_id', $file->parent_id)->get() : File::where('id', $file->id)->orWhere('parent_id', $file->id)->get();
+        $parentFile = $file->parent_id ? File::findOrFail($file->parent_id) : $file;
+        $versions = File::where('id', $parentFile->id)
+            ->orWhere('parent_id', $parentFile->id)
+            ->orderBy('version', 'desc')
+            ->get();
         return view('files.history', compact('parentFile', 'versions', 'file'));
     }
 

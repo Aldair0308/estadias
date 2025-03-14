@@ -61,6 +61,11 @@ class TemplateController extends Controller
     public function show(string $id)
     {
         $template = Template::with('versions')->findOrFail($id);
+        
+        // If this is a parent template, get its latest version
+        if (!$template->parent_id && $template->versions->isNotEmpty()) {
+            $template = $template->versions->sortByDesc('created_at')->first();
+        }
         $excelPreview = null;
         $wordPreview = null;
 
@@ -184,7 +189,9 @@ class TemplateController extends Controller
     {
         $template = Template::with('versions')->findOrFail($id);
         $parentTemplate = $template;
-        $versions = $template->parent_id ? Template::where('id', $template->parent_id)->orWhere('parent_id', $template->parent_id)->get() : Template::where('id', $template->id)->orWhere('parent_id', $template->id)->get();
+        $versions = $template->parent_id 
+            ? Template::where('id', $template->parent_id)->orWhere('parent_id', $template->parent_id)->latest('created_at')->get() 
+            : Template::where('id', $template->id)->orWhere('parent_id', $template->id)->latest('created_at')->get();
         return view('templates.history', compact('parentTemplate', 'versions', 'template'));
     }
 
