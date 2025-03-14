@@ -23,7 +23,25 @@ class RoleAndPermissionSeeder extends Seeder
         Permission::create(['name' => 'edit files']);
         Permission::create(['name' => 'delete files']);
 
+        // Create template permissions
+        Permission::create(['name' => 'create templates']);
+        Permission::create(['name' => 'view templates']);
+        Permission::create(['name' => 'edit templates']);
+        Permission::create(['name' => 'delete templates']);
+
         // Create roles and assign permissions
+        $adminRole = Role::create(['name' => 'admin']);
+        $adminRole->givePermissionTo([
+            'upload files',
+            'view files',
+            'edit files',
+            'delete files',
+            'create templates',
+            'view templates',
+            'edit templates',
+            'delete templates'
+        ]);
+
         $tutorRole = Role::create(['name' => 'tutor']);
         $tutorRole->givePermissionTo([
             'upload files',

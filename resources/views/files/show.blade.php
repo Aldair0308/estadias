@@ -6,6 +6,37 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Detalles del Archivo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .document-preview {
+            max-height: 800px;
+            overflow-y: auto;
+            padding: 30px;
+            background-color: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .document-preview img {
+            max-width: 100%;
+            height: auto;
+            margin: 10px 0;
+            display: block;
+        }
+        .document-preview table {
+            width: 100%;
+            margin-bottom: 1rem;
+            border-collapse: collapse;
+        }
+        .document-preview table td,
+        .document-preview table th {
+            padding: 8px;
+            border: 1px solid #dee2e6;
+        }
+        .document-preview p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+    </style>
 </head>
 <body class="bg-light">
     <div class="container py-5">
@@ -80,27 +111,7 @@
                     @elseif($file->isWord())
                         <div class="mt-3">
                             <h5>Vista Previa de Documento Word:</h5>
-                            <div class="alert alert-info">
-                                <p class="mb-0">Este es un documento Word. Puedes descargarlo y abrirlo con Microsoft Word o software compatible.</p>
-                            </div>
-                            @if($wordPreview)
-                                <div class="mt-4">
-                                    <h5>Vista Previa del Contenido Word:</h5>
-                                    <div class="document-preview" style="max-height: 500px; overflow-y: auto; padding: 20px; background-color: white; border: 1px solid #dee2e6; border-radius: 4px;">
-                                        {!! $wordPreview !!}
-                                    </div>
-                                </div>
-                                <div class="mt-3">
-                                    <a href="{{ route('files.write', $file->id) }}" class="btn btn-success">
-                                        <i class="bi bi-pencil-square"></i> Editar Documento
-                                    </a>
-                                </div>
-                            @elseif($wordPreviewError)
-                                <div class="alert alert-danger mt-3">
-                                    <h5>Error en la Vista Previa:</h5>
-                                    <p>{{ $wordPreviewError }}</p>
-                                </div>
-                            @endif
+                            <x-word-preview :file="$file" />
                         </div>
                     @endif
                 </div>

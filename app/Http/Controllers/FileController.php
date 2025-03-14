@@ -110,14 +110,22 @@ class FileController extends Controller
                 $wordPreview = $file->getHtmlContent();
                 if ($wordPreview === null) {
                     \Log::error('Word preview generation returned null');
-                    $wordPreviewError = 'Failed to generate Word preview';
+                    $wordPreviewError = 'No se pudo generar la vista previa del documento';
                 } else {
+                    // Check for EMF images and set warning if found
+                    if (strpos($wordPreview, 'EMF') !== false) {
+                        $wordPreviewError = 'El documento contiene imágenes EMF que no se pueden mostrar en la vista previa. El documento se mostrará sin estas imágenes.';
+                    }
                     \Log::debug('Word preview generated successfully');
                 }
             } catch (\Exception $e) {
                 \Log::error('Word preview error in controller: ' . $e->getMessage());
                 \Log::error($e->getTraceAsString());
-                $wordPreviewError = 'Error generating Word preview: ' . $e->getMessage();
+                if (strpos($e->getMessage(), 'EMF') !== false) {
+                    $wordPreviewError = 'El documento contiene imágenes EMF que no se pueden mostrar en la vista previa. El documento se mostrará sin estas imágenes.';
+                } else {
+                    $wordPreviewError = 'Error al generar la vista previa: ' . $e->getMessage();
+                }
             }
         }
 

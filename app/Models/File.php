@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class File extends Model
 {
@@ -409,204 +410,15 @@ class File extends Model
     public function getHtmlContent()
     {
         if (!$this->isWord()) {
-            \Log::debug('File is not a Word document');
             throw new \Exception('This file is not a Word document');
         }
 
         try {
             $filePath = Storage::path('public/' . $this->path);
-            \Log::debug('Starting Word preview generation for file: ' . $this->original_name);
-            \Log::debug('Attempting to convert Word file: ' . $filePath);
-            
-            // Verify file exists
-            if (!file_exists($filePath)) {
-                throw new \Exception('Word file not found at path: ' . $filePath);
-            }
-
-            // Verify file is readable
-            if (!is_readable($filePath)) {
-                throw new \Exception('Word file is not readable: ' . $filePath);
-            }
-
-            // Ensure temp images directory exists and is writable
-            $tempImagesDir = storage_path('app/public/temp_images');
-            if (!file_exists($tempImagesDir)) {
-                if (!mkdir($tempImagesDir, 0755, true)) {
-                    throw new \Exception('Failed to create temp images directory');
-                }
-            }
-            
-            if (!is_writable($tempImagesDir)) {
-                throw new \Exception('Temp images directory is not writable');
-            }
-
-            \Log::debug('Loading Word document...');
-            try {
-                // Pre-process the document to extract and convert EMF images before loading
-                \Log::debug('Pre-processing document to handle EMF images');
-                $convertedImages = $this->extractAndConvertEmfImages($filePath, $tempImagesDir);
-                \Log::debug('Found and processed ' . count($convertedImages) . ' EMF/WMF images');
-                
-                // Try to load the document with special handling for EMF images
-                try {
-                    // Use a custom reader with image processing capabilities
-                    $reader = \PhpOffice\PhpWord\IOFactory::createReader('Word2007');
-                    
-                    // Set up image processor if the method exists
-                    if (method_exists($reader, 'setImageProcessor')) {
-                        $reader->setImageProcessor(function($imageData, $mimeType) use ($tempImagesDir, $convertedImages) {
-                            // Handle EMF/WMF images by replacing with converted PNG
-                            if (strpos(strtolower($mimeType), 'emf') !== false || strpos(strtolower($mimeType), 'wmf') !== false) {
-                                // Generate a hash of the image data to find its converted version
-                                $imageHash = md5($imageData);
-                                
-                                // Check if we have a pre-converted version
-                                if (isset($convertedImages[$imageHash])) {
-                                    \Log::debug('Using pre-converted EMF/WMF image: ' . $convertedImages[$imageHash]);
-                                    return file_get_contents($convertedImages[$imageHash]);
-                                }
-                                
-                                // Try to convert on-the-fly if not pre-converted
-                                $convertedImagePath = $tempImagesDir . '/' . $imageHash . '.png';
-                                if (!file_exists($convertedImagePath)) {
-                                    // Save the EMF data to a temporary file
-                                    $tempEmfPath = $tempImagesDir . '/' . uniqid('emf_') . '.emf';
-                                    file_put_contents($tempEmfPath, $imageData);
-                                    
-                                    // Try to convert it
-                                    $converted = $this->convertEmfWithImagick($tempEmfPath, $convertedImagePath);
-                                    
-                                    // Clean up temp file
-                                    if (file_exists($tempEmfPath)) {
-                                        unlink($tempEmfPath);
-                                    }
-                                    
-                                    if (!$converted) {
-                                        \Log::warning('On-the-fly conversion failed for EMF/WMF image');
-                                        return null;
-                                    }
-                                }
-                                
-                                if (file_exists($convertedImagePath) && filesize($convertedImagePath) > 0) {
-                                    \Log::debug('Using converted EMF/WMF image: ' . $convertedImagePath);
-                                    return file_get_contents($convertedImagePath);
-                                }
-                                
-                                // If conversion failed, return null to skip this image
-                                \Log::warning('Converted EMF/WMF image not found: ' . $imageHash);
-                                return null;
-                            }
-                            return $imageData;
-                        });
-                    }
-                    
-                    // Load the document with our custom reader
-                    $phpWord = $reader->load($filePath);
-                    
-                } catch (\Exception $e) {
-                    // Check if the error is related to EMF/WMF images
-                    if (strpos($e->getMessage(), 'Invalid image') !== false && 
-                        (strpos($e->getMessage(), '.emf') !== false || strpos($e->getMessage(), '.wmf') !== false)) {
-                        \Log::warning('EMF/WMF image format issue detected: ' . $e->getMessage());
-                        
-                        // Fallback to standard loading if custom processing failed
-                        \Log::debug('Falling back to standard document loading');
-                        $phpWord = \PhpOffice\PhpWord\IOFactory::load($filePath);
-                    } else {
-                        // If it's not an EMF/WMF issue, rethrow the exception
-                        throw $e;
-                    }
-                }
-            } catch (\Exception $e) {
-                throw new \Exception('Failed to load Word document: ' . $e->getMessage());
-            }
-            \Log::debug('Successfully loaded Word document');
-
-            // Configure HTML writer settings
-            try {
-                $htmlWriter = new \PhpOffice\PhpWord\Writer\HTML($phpWord);
-                
-                // Set options to handle problematic images if methods exist
-                if (method_exists($htmlWriter, 'setImagesHandling')) {
-                    $htmlWriter->setImagesHandling('base64');
-                }
-                
-                if (method_exists($htmlWriter, 'setImagesFallback')) {
-                    $htmlWriter->setImagesFallback(function($image) use ($tempImagesDir) {
-                        // Handle EMF images by using our converted PNG versions
-                        if (isset($image['type']) && strpos($image['type'], 'emf') !== false) {
-                            // Check if we have a converted version of this EMF image
-                            if (isset($image['data'])) {
-                                $imageHash = md5($image['data']);
-                                $convertedImagePath = $tempImagesDir . '/' . $imageHash . '.png';
-                                
-                                if (file_exists($convertedImagePath)) {
-                                    // Use the converted PNG image
-                                    $imgData = file_get_contents($convertedImagePath);
-                                    $base64 = base64_encode($imgData);
-                                    return '<img src="data:image/png;base64,' . $base64 . '" alt="Converted EMF Image" />';
-                                }
-                            }
-                            
-                            // If no converted image is found, try to convert it now
-                        try {
-                            // Generate a unique filename for this EMF image
-                            $tempEmfPath = $tempImagesDir . '/' . uniqid('emf_') . '.emf';
-                            if (isset($image['data'])) {
-                                file_put_contents($tempEmfPath, $image['data']);
-                                $imageHash = md5_file($tempEmfPath);
-                                $convertedImagePath = $tempImagesDir . '/' . $imageHash . '.png';
-                                
-                                // Try to convert the EMF image
-                                if ($this->convertEmfWithImagick($tempEmfPath, $convertedImagePath)) {
-                                    // Use the converted PNG image
-                                    $imgData = file_get_contents($convertedImagePath);
-                                    $base64 = base64_encode($imgData);
-                                    return '<img src="data:image/png;base64,' . $base64 . '" alt="Converted EMF Image" />';
-                                }
-                                
-                                // Clean up the temporary EMF file
-                                if (file_exists($tempEmfPath)) {
-                                    unlink($tempEmfPath);
-                                }
-                            }
-                        } catch (\Exception $convEx) {
-                            \Log::warning('Failed to convert EMF image on-the-fly: ' . $convEx->getMessage());
-                        }
-                        
-                        // If all conversion attempts fail, use a more informative placeholder
-                        return '<div class="emf-image-placeholder" style="border: 1px solid #4682B4; padding: 15px; background: linear-gradient(to bottom, #F0F8FF, #B0E0E6); text-align: center; border-radius: 5px; margin: 10px 0;">' . 
-                               '<h4 style="color: #191970; margin-top: 0;">Imagen EMF Convertida</h4>' . 
-                               '<p style="color: #2F4F4F;">Esta imagen ha sido convertida del formato EMF para su visualización en la vista previa.</p>' . 
-                               '<p style="color: #2F4F4F;">Si necesita ver la imagen original con mayor calidad, por favor descargue el documento completo.</p>' . 
-                               '</div>';
-                        }
-                        return null; // Process normally
-                    });
-                }
-            } catch (\Exception $e) {
-                throw new \Exception('Failed to configure HTML writer: ' . $e->getMessage());
-            }
-
-            \Log::debug('Converting Word to HTML...');
-            $htmlContent = '';
-            ob_start();
-            try {
-                $htmlWriter->save('php://output');
-                $htmlContent = ob_get_clean();
-                if (empty($htmlContent)) {
-                    throw new \Exception('HTML conversion produced empty content');
-                }
-                \Log::debug('Successfully converted Word to HTML');
-            } catch (\Exception $e) {
-                ob_end_clean();
-                throw new \Exception('Failed to convert Word to HTML: ' . $e->getMessage());
-            }
-
-            return $htmlContent;
+            $wordPreviewService = new \App\Services\WordPreviewService();
+            return $wordPreviewService->generatePreview($filePath);
         } catch (\Exception $e) {
-            \Log::error('Word preview error for file ' . $this->original_name . ': ' . $e->getMessage());
-            \Log::debug('Error trace: ' . $e->getTraceAsString());
+            Log::error('Failed to generate Word preview: ' . $e->getMessage());
             throw $e;
         }
     }
