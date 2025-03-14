@@ -22,7 +22,8 @@ class File extends Model
         'parent_id',
         'description',
         'content_hash',
-        'observations'
+        'observations',
+        'responsible_email'
     ];
 
     /**

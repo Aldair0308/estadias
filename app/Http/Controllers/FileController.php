@@ -54,7 +54,8 @@ class FileController extends Controller
                 'path' => $path,
                 'mime_type' => $template->mime_type,
                 'size' => Storage::disk('public')->size($path),
-                'description' => $request->description
+                'description' => $request->description,
+                'responsible_email' => auth()->user()->email
             ]);
 
             return redirect()->route('files.index')->with('success', 'File created from template successfully.');
@@ -79,7 +80,8 @@ class FileController extends Controller
             'path' => $path,
             'mime_type' => $file->getMimeType(),
             'size' => $file->getSize(),
-            'description' => $request->description
+            'description' => $request->description,
+            'responsible_email' => auth()->user()->email
         ]);
 
         return redirect()->route('files.index')->with('success', 'File uploaded successfully.');

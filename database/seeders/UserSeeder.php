@@ -35,3 +35,5 @@ class UserSeeder extends Seeder
         ])->assignRole('student');
     }
 }
+
+// to run this seeder use php artisan db:seed --class=UserSeeder

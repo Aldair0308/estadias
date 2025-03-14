@@ -68,3 +68,5 @@ class RoleAndPermissionSeeder extends Seeder
         }
     }
 }
+
+// to run this seeder use php artisan db:seed --class=RoleAndPermissionSeeder
