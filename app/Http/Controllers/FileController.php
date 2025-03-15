@@ -30,10 +30,11 @@ class FileController extends Controller
             $query->orderBy('created_at', 'desc');
         }])->get();
         
-        // Transform each file to include version count and latest version data
+        // Transform the files collection to include latest version data while preserving version count
         $files = $files->map(function($file) {
             $latestVersion = $file->versions->first();
             if ($latestVersion) {
+                // Create a new instance with latest version data but preserve the original file's version count
                 $latestVersion->versions = $file->versions;
                 return $latestVersion;
             }

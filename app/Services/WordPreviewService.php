@@ -137,14 +137,27 @@ class WordPreviewService
 
             $extension = strtolower(pathinfo($imageSrc, PATHINFO_EXTENSION));
             if ($extension === 'emf') {
-                // Silently skip EMF images
+                // Silently skip EMF images without logging
+                $element->setImage(null);
+                return;
+            }
+
+            // Process other image types normally
+            if (!$this->isValidImageType($extension)) {
                 $element->setImage(null);
                 return;
             }
         } catch (\Exception $e) {
-            // Silently handle any image processing errors
+            // Handle any image processing errors
             $element->setImage(null);
+            Log::warning('Image processing error: ' . $e->getMessage());
         }
+    }
+
+    protected function isValidImageType($extension)
+    {
+        $validTypes = ['png', 'jpg', 'jpeg', 'gif', 'bmp'];
+        return in_array(strtolower($extension), $validTypes);
     }
 
     protected function convertEmfToPng($emfPath)
