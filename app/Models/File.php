@@ -23,7 +23,8 @@ class File extends Model
         'description',
         'content_hash',
         'observations',
-        'responsible_email'
+        'responsible_email',
+        'checked'
     ];
 
     /**
@@ -32,6 +33,14 @@ class File extends Model
     public function parent()
     {
         return $this->belongsTo(File::class, 'parent_id');
+    }
+
+    /**
+     * Get the user responsible for this file
+     */
+    public function responsible()
+    {
+        return $this->belongsTo(User::class, 'responsible_email', 'email');
     }
 
     /**

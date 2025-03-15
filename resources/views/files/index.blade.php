@@ -12,7 +12,12 @@
     <div class="container py-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1>Gestión de Archivos</h1>
-            <a href="{{ route('files.create') }}" class="btn btn-primary">Subir Nuevo Archivo</a>
+            <div>
+                @role('tutor')
+                <a href="{{ route('files.review') }}" class="btn btn-secondary me-2">Revisar Archivos</a>
+                @endrole
+                <a href="{{ route('files.create') }}" class="btn btn-primary">Subir Nuevo Archivo</a>
+            </div>
         </div>
 
         @if(session('success'))

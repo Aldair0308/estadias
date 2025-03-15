@@ -12,44 +12,38 @@
             <h1>Document Review</h1>
             <div>
                 <a href="{{ route('files.index') }}" class="btn btn-secondary">Back to Files</a>
-                <a href="{{ route('files.show', $file->id) }}" class="btn btn-info">View Details</a>
+                <a href="{{ route('files.index') }}" class="btn btn-secondary">Back to Files</a>
             </div>
         </div>
 
         <div class="card mb-4">
             <div class="card-header">
-                <h5 class="mb-0">{{ $file->original_name }}</h5>
+                <h5 class="mb-0">Files to Review</h5>
             </div>
             <div class="card-body">
-                <!-- File Preview Section -->
-                <div class="mb-4">
-                    @if($file->isPdf())
-                        <div class="ratio ratio-16x9" style="max-height: 600px;">
-                            <embed src="{{ Storage::url($file->path) }}" type="application/pdf" width="100%" height="600px" />
-                        </div>
-                    @elseif($file->isExcel())
-                        @if($excelPreview)
-                            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-                                <table class="table table-bordered table-striped table-hover">
-                                    <tbody>
-                                        @foreach($excelPreview as $row)
-                                            <tr>
-                                                @foreach($row as $cell)
-                                                    <td>{{ $cell }}</td>
-                                                @endforeach
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        @endif
-                    @elseif($file->isWord())
-                        @if($file->getHtmlContent())
-                            <div class="bg-white p-4 border rounded" style="max-height: 600px; overflow-y: auto;">
-                                {!! $file->getHtmlContent() !!}
-                            </div>
-                        @endif
-                    @endif
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>File Name</th>
+                                <th>Responsible</th>
+                                <th>Uploaded Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($files as $file)
+                                <tr>
+                                    <td>{{ $file->original_name }}</td>
+                                    <td>{{ $file->responsible ? $file->responsible->name : 'No Responsible' }}</td>
+                                    <td>{{ $file->created_at->format('Y-m-d H:i') }}</td>
+                                    <td>
+                                        <a href="{{ route('files.show', $file->id) }}" class="btn btn-sm btn-info">View Details</a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
 
                 <!-- Observations Form -->

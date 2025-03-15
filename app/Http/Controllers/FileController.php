@@ -26,9 +26,14 @@ class FileController extends Controller
             $query->where('responsible_email', auth()->user()->email);
         }
         
-        $files = $query->with(['versions' => function($query) {
-            $query->orderBy('created_at', 'desc');
-        }])->get();
+        $files = $query->with([
+            'versions' => function($query) {
+                $query->orderBy('created_at', 'desc');
+            },
+            'responsible' => function($query) {
+                $query->select('id', 'name', 'email');
+            }
+        ])->get();
         
         // Transform the files collection to include latest version data while preserving version count
         $files = $files->map(function($file) {
@@ -42,6 +47,24 @@ class FileController extends Controller
         });
         
         return view('files.index', compact('files'));
+    }
+
+    public function review()
+    {
+        if (!auth()->user()->hasRole('tutor')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $files = File::whereNull('parent_id')
+            ->with([
+                'responsible' => function($query) {
+                    $query->select('id', 'name', 'email');
+                }
+            ])
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        return view('files.review', compact('files'));
     }
 
     public function create()
@@ -164,8 +187,7 @@ class FileController extends Controller
     {
         $request->validate([
             'file' => 'nullable|file|mimes:pdf,xls,xlsx,doc,docx|max:10240',
-            'description' => 'nullable|string|max:1000',
-            'observations' => 'nullable|string|max:2000'
+            'description' => 'nullable|string|max:1000'
         ]);
 
         $oldFile = File::findOrFail($id);
@@ -212,6 +234,23 @@ class FileController extends Controller
 
             return redirect()->route('files.index')->with('success', 'File information updated successfully.');
         }
+    }
+
+    public function updateObservations(Request $request, string $id)
+    {
+        if (!auth()->user()->hasRole('tutor')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $request->validate([
+            'observations' => 'required|string|max:2000'
+        ]);
+
+        $file = File::findOrFail($id);
+        $file->observations = $request->observations;
+        $file->save();
+
+        return redirect()->back()->with('success', 'Observations updated successfully.');
     }
 
     public function destroy(string $id)
