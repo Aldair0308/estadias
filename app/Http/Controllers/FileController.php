@@ -236,6 +236,21 @@ class FileController extends Controller
         }
     }
 
+
+
+    public function markReviewed(string $id)
+    {
+        if (!auth()->user()->hasRole('tutor')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $file = File::findOrFail($id);
+        $file->checked = !$file->checked;
+        $file->save();
+
+        return redirect()->back()->with('success', $file->checked ? 'Archivo marcado como revisado.' : 'Se ha quitado la marca de revisado del archivo.');
+    }
+
     public function updateObservations(Request $request, string $id)
     {
         if (!auth()->user()->hasRole('tutor')) {

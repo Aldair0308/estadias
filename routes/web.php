@@ -23,6 +23,7 @@ Route::get('/', function () {
 
 Route::resource('files', FileController::class);
 Route::get('/files-review', [FileController::class, 'review'])->name('files.review')->middleware(['auth', 'role:tutor']);
+Route::patch('/files/{file}/mark-reviewed', [FileController::class, 'markReviewed'])->name('files.mark-reviewed')->middleware(['auth', 'role:tutor']);
 Route::put('/files/{file}/observations', [FileController::class, 'updateObservations'])->name('files.update-observations')->middleware(['auth', 'role:tutor']);
 Route::post('/files/{file}/content', [FileController::class, 'updateContent'])->name('files.content.update');
 Route::get('/files/{file}/history', [FileController::class, 'history'])->name('files.history');

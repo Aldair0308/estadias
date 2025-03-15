@@ -42,28 +42,71 @@ class WordPreviewService
 
     protected function loadDocument($filePath)
     {
-        try {
-            $reader = IOFactory::createReader('Word2007');
-            return $reader->load($filePath);
-        } catch (\Exception $e) {
-            throw new \Exception('Failed to load Word document: ' . $e->getMessage());
+        $attempts = [
+            'text_only' => function() use ($filePath) {
+                $reader = IOFactory::createReader('Word2007');
+                if (method_exists($reader, 'setReadDataOnly')) {
+                    $reader->setReadDataOnly(true);
+                }
+                if (method_exists($reader, 'setStrictParsingMode')) {
+                    $reader->setStrictParsingMode(false);
+                }
+                // Additional settings to maximize text extraction
+                if (method_exists($reader, 'setLoadSheetsOnly')) {
+                    $reader->setLoadSheetsOnly(true);
+                }
+                return $reader->load($filePath);
+            },
+            'ignore_images' => function() use ($filePath) {
+                $reader = IOFactory::createReader('Word2007');
+                if (method_exists($reader, 'setReadDataOnly')) {
+                    $reader->setReadDataOnly(true);
+                }
+                return $reader->load($filePath);
+            },
+            'compatibility_mode' => function() use ($filePath) {
+                $reader = IOFactory::createReader('Word2007');
+                if (method_exists($reader, 'setStrictParsingMode')) {
+                    $reader->setStrictParsingMode(false);
+                }
+                return $reader->load($filePath);
+            },
+            'default' => function() use ($filePath) {
+                $reader = IOFactory::createReader('Word2007');
+                return $reader->load($filePath);
+            }
+        ];
+
+        $lastError = null;
+        foreach ($attempts as $method => $attempt) {
+            try {
+                Log::info("Attempting to load document using {$method} method");
+                return $attempt();
+            } catch (\Exception $e) {
+                $lastError = $e;
+                Log::warning("Failed to load document using {$method} method: " . $e->getMessage());
+                continue;
+            }
         }
+
+        // If we've exhausted all attempts, throw a user-friendly error
+        Log::error('All document loading attempts failed. Last error: ' . $lastError->getMessage());
+        throw new \Exception('Unable to open this document. The file might be corrupted or in an unsupported format.');
     }
 
     protected function convertToHtml($phpWord)
     {
-        // Process EMF images before conversion
-        $this->processEmfImages($phpWord);
-
+        // Skip image processing for better text extraction
         $writer = new HTML($phpWord);
         
-        // Configure HTML writer for better output
+        // Configure HTML writer for better text output
         if (method_exists($writer, 'setHtmlBlockElements')) {
             $writer->setHtmlBlockElements(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div']);
         }
 
+        // Disable image handling to focus on text
         if (method_exists($writer, 'setImagesHandling')) {
-            $writer->setImagesHandling('base64');
+            $writer->setImagesHandling('omit');
         }
 
         ob_start();
@@ -136,15 +179,13 @@ class WordPreviewService
             if (!$imageSrc) return;
 
             $extension = strtolower(pathinfo($imageSrc, PATHINFO_EXTENSION));
-            if ($extension === 'emf') {
-                // Silently skip EMF images without logging
+            
+            // Remove EMF images and other unsupported formats
+            if ($extension === 'emf' || !$this->isValidImageType($extension)) {
                 $element->setImage(null);
-                return;
-            }
-
-            // Process other image types normally
-            if (!$this->isValidImageType($extension)) {
-                $element->setImage(null);
+                if ($extension === 'emf') {
+                    Log::info('Removed EMF image for better document compatibility');
+                }
                 return;
             }
         } catch (\Exception $e) {
