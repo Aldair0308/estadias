@@ -54,8 +54,9 @@
                             </tr>
                         </thead>
                             <tbody>
-                            @foreach($files->where('checked', false)->sortBy('created_at') as $file)
-                                <tr>
+                            @if($files->where('checked', false)->count() > 0)
+                                @foreach($files->where('checked', false)->sortBy('created_at') as $file)
+                                    <tr>
                                     <td>{{ $file->original_name }}</td>
                                     <td>{{ $file->responsible ? $file->responsible->name : 'Sin Responsable' }}</td>
                                     <td>{{ $file->created_at->format('Y-m-d H:i') }}</td>
@@ -64,8 +65,15 @@
                                             Vista Previa
                                         </button>
                                     </td>
+                                    </tr>
+                                @endforeach
+                            @else
+                                <tr>
+                                    <td colspan="4" class="text-center py-4">
+                                        <p class="text-muted mb-0">No hay más archivos por revisar ahora</p>
+                                    </td>
                                 </tr>
-                            @endforeach
+                            @endif
                         </tbody>
                     </table>
                 </div>

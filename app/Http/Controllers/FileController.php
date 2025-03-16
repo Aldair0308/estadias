@@ -422,7 +422,8 @@ class FileController extends Controller
                 'version' => $file->version + 1,
                 'parent_id' => $file->parent_id ?? $file->id,
                 'description' => $file->description,
-                'observations' => 'Content updated through editor'
+                'observations' => 'Content updated through editor',
+                'responsible_email' => auth()->user()->email
             ]);
 
             return response()->json(['success' => true, 'message' => 'Document updated successfully']);
