@@ -55,14 +55,34 @@ class FileController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $files = File::whereNull('parent_id')
+        // Get parent files with their versions and responsible users
+        $parentFiles = File::whereNull('parent_id')
             ->with([
                 'responsible' => function($query) {
                     $query->select('id', 'name', 'email');
                 }
             ])
-            ->orderBy('created_at', 'asc')
             ->get();
+
+        // Collect all versions including parent files
+        $allFiles = collect();
+        foreach ($parentFiles as $parentFile) {
+            // Add parent file
+            $allFiles->push($parentFile);
+            
+            // Add all versions of the file
+            $versions = File::where('parent_id', $parentFile->id)
+                ->with('responsible', function($query) {
+                    $query->select('id', 'name', 'email');
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            $allFiles = $allFiles->concat($versions);
+        }
+
+        // Sort all files by checked status and creation date
+        $files = $allFiles->sortBy(['checked', 'created_at']);
 
         return view('files.review', compact('files'));
     }
