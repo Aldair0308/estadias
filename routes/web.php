@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StudentsController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\TemplateVersionController;
@@ -19,6 +20,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
+});
+
+Route::middleware(['auth', 'role:tutor'])->group(function () {
+    Route::resource('students', StudentsController::class);
 });
 
 Route::resource('files', FileController::class);
