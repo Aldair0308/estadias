@@ -26,20 +26,14 @@ class FileController extends Controller
             $query->where('responsible_email', auth()->user()->email);
         }
         
-        $files = $query->with([
-            'versions' => function($query) {
-                $query->orderBy('created_at', 'desc');
-            },
-            'responsible' => function($query) {
-                $query->select('id', 'name', 'email');
-            }
-        ])->get();
+        $files = $query->with(['versions' => function($query) {
+            $query->orderBy('created_at', 'desc');
+        }])->get();
         
-        // Transform the files collection to include latest version data while preserving version count
+        // Transform each file to include version count and latest version data
         $files = $files->map(function($file) {
             $latestVersion = $file->versions->first();
             if ($latestVersion) {
-                // Create a new instance with latest version data but preserve the original file's version count
                 $latestVersion->versions = $file->versions;
                 return $latestVersion;
             }
@@ -47,44 +41,6 @@ class FileController extends Controller
         });
         
         return view('files.index', compact('files'));
-    }
-
-    public function review()
-    {
-        if (!auth()->user()->hasRole('tutor')) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        // Get parent files with their versions and responsible users
-        $parentFiles = File::whereNull('parent_id')
-            ->with([
-                'responsible' => function($query) {
-                    $query->select('id', 'name', 'email');
-                }
-            ])
-            ->get();
-
-        // Collect all versions including parent files
-        $allFiles = collect();
-        foreach ($parentFiles as $parentFile) {
-            // Add parent file
-            $allFiles->push($parentFile);
-            
-            // Add all versions of the file
-            $versions = File::where('parent_id', $parentFile->id)
-                ->with('responsible', function($query) {
-                    $query->select('id', 'name', 'email');
-                })
-                ->orderBy('created_at', 'desc')
-                ->get();
-            
-            $allFiles = $allFiles->concat($versions);
-        }
-
-        // Sort all files by checked status and creation date
-        $files = $allFiles->sortBy(['checked', 'created_at']);
-
-        return view('files.review', compact('files'));
     }
 
     public function create()
@@ -207,7 +163,8 @@ class FileController extends Controller
     {
         $request->validate([
             'file' => 'nullable|file|mimes:pdf,xls,xlsx,doc,docx|max:10240',
-            'description' => 'nullable|string|max:1000'
+            'description' => 'nullable|string|max:1000',
+            'observations' => 'nullable|string|max:2000'
         ]);
 
         $oldFile = File::findOrFail($id);
@@ -254,38 +211,6 @@ class FileController extends Controller
 
             return redirect()->route('files.index')->with('success', 'File information updated successfully.');
         }
-    }
-
-
-
-    public function markReviewed(string $id)
-    {
-        if (!auth()->user()->hasRole('tutor')) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        $file = File::findOrFail($id);
-        $file->checked = !$file->checked;
-        $file->save();
-
-        return redirect()->back()->with('success', $file->checked ? 'Archivo marcado como revisado.' : 'Se ha quitado la marca de revisado del archivo.');
-    }
-
-    public function updateObservations(Request $request, string $id)
-    {
-        if (!auth()->user()->hasRole('tutor')) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        $request->validate([
-            'observations' => 'required|string|max:2000'
-        ]);
-
-        $file = File::findOrFail($id);
-        $file->observations = $request->observations;
-        $file->save();
-
-        return redirect()->back()->with('success', 'Observations updated successfully.');
     }
 
     public function destroy(string $id)
@@ -422,8 +347,7 @@ class FileController extends Controller
                 'version' => $file->version + 1,
                 'parent_id' => $file->parent_id ?? $file->id,
                 'description' => $file->description,
-                'observations' => 'Content updated through editor',
-                'responsible_email' => auth()->user()->email
+                'observations' => 'Content updated through editor'
             ]);
 
             return response()->json(['success' => true, 'message' => 'Document updated successfully']);
