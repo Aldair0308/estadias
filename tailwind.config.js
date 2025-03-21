@@ -9,11 +9,21 @@ export default {
         './resources/views/**/*.blade.php',
     ],
 
+    darkMode: 'class',
+
     theme: {
         extend: {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
+            colors: {
+                dark: {
+                    'bg': '#1a1a1a',
+                    'text': '#ffffff',
+                    'border': '#2d2d2d',
+                    'hover': '#2d2d2d'
+                }
+            }
         },
     },
 

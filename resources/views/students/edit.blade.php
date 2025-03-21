@@ -13,8 +13,8 @@
             </a>
         </div>
 
-        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6 bg-white border-b border-gray-200">
+        <div class="bg-[var(--primary-bg)] overflow-hidden shadow-xl sm:rounded-lg border border-[var(--button-border)]">
+            <div class="p-6 bg-[var(--primary-bg)] border-b border-[var(--button-border)]">
                 <form action="{{ route('students.update', $student) }}" method="POST">
                     @csrf
                     @method('PUT')
