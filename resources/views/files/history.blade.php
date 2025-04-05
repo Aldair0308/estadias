@@ -3,14 +3,136 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Historial de Versiones del Archivo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+            --info-color: #0dcaf0;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --border-color: #e9ecef;
+            --card-bg: #ffffff;
+            --header-gradient-start: var(--primary-color);
+            --header-gradient-end: #0056b3;
+            --preview-bg: #ffffff;
+            --preview-text: #212529;
+            --table-text: #212529;
+            --table-bg: #ffffff;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1e21;
+            --text-color: #e9ecef;
+            --border-color: #495057;
+            --card-bg: #2b3035;
+            --header-gradient-start: #212529;
+            --header-gradient-end: #141619;
+            --table-text: #e9ecef;
+            --table-bg: #2b3035;
+            --preview-bg: #ffffff;
+            --preview-text: #212529;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .text-muted {
+            color: rgba(16, 17, 18, 0.75) !important;
+        }
+        [data-theme="dark"] .text-muted {
+            color: rgba(233, 236, 239, 0.75) !important;
+        }
+        
+        .small, small {
+            color: inherit;
+            opacity: 0.85;
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, var(--header-gradient-start), var(--header-gradient-end));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .card {
+            border: none;
+            background-color: var(--card-bg);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease-in-out;
+            margin-bottom: 2rem;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .card-header {
+            background: var(--card-bg);
+            border-bottom: 2px solid var(--border-color);
+            padding: 1rem 1.25rem;
+            color: var(--text-color);
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-group .btn {
+            border-radius: 4px;
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            border: none;
+            box-shadow: 0 2px 4px rgba(13, 110, 253, 0.2);
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+        }
+        
+        .table {
+            background: var(--table-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            color: var(--table-text);
+        }
+        
+        .table thead th {
+            background-color: var(--table-bg);
+            border-bottom: 2px solid var(--border-color);
+            color: var(--table-text);
+            font-weight: 600;
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: var(--bg-color);
+        }
+        
         .version-timeline {
             position: relative;
             padding-left: 30px;
+            color: var(--text-color);
         }
+        
         .version-timeline::before {
             content: '';
             position: absolute;
@@ -18,55 +140,99 @@
             top: 0;
             height: 100%;
             width: 2px;
-            background: #dee2e6;
+            background: var(--border-color);
         }
+        
         .version-item {
             position: relative;
             margin-bottom: 20px;
             padding-bottom: 20px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            transition: transform 0.2s ease-in-out;
         }
+        
+        .version-item:hover {
+            transform: translateY(-2px);
+        }
+        
         .version-item:last-child {
             border-bottom: none;
         }
+        
         .version-marker {
             position: absolute;
             left: -30px;
             width: 30px;
             height: 30px;
             border-radius: 50%;
-            background: #fff;
-            border: 2px solid #0d6efd;
+            background: var(--card-bg);
+            border: 2px solid var(--primary-color);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 1;
+            color: var(--text-color);
         }
+        
         .current-version .version-marker {
-            background: #0d6efd;
+            background: var(--primary-color);
             color: white;
         }
+        
         .version-date {
-            color: #6c757d;
+            color: var(--text-color);
+            opacity: 0.8;
             font-size: 0.875rem;
         }
+        
         .version-actions {
             margin-top: 10px;
+            gap: 0.5rem;
+        }
+        
+        .alert {
+            border: none;
+            border-radius: 8px;
         }
     </style>
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        });
+    </script>
 </head>
 <body class="bg-light">
-    <div class="container py-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h1>Historial de Versiones</h1>
-                <h5 class="text-muted">{{ $parentFile->original_name }}</h5>
-            </div>
-            <div>
-                <a href="{{ route('files.show', $parentFile->id) }}" class="btn btn-secondary">Volver al Archivo</a>
-                <a href="{{ route('files.index') }}" class="btn btn-outline-secondary">Todos los Archivos</a>
+    <div class="page-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="mb-0">Historial de Versiones</h1>
+                    <p class="text-light mb-0">{{ $parentFile->original_name }}</p>
+                </div>
+                <div class="btn-group">
+                    <button onclick="toggleTheme()" class="btn btn-light me-2">
+                        <i class="bi bi-moon-stars"></i>
+                    </button>
+                    <a href="{{ route('files.show', $parentFile->id) }}" class="btn btn-light"><i class="bi bi-arrow-left me-2"></i>Volver</a>
+                    <a href="{{ route('files.index') }}" class="btn btn-light"><i class="bi bi-house me-2"></i>Inicio</a>
+                </div>
             </div>
         </div>
+    </div>
+
+    <div class="container py-4">
 
         @if(session('success'))
             <div class="alert alert-success">
