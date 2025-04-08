@@ -29,7 +29,7 @@
                     @csrf
                     @method('PUT')
                     <div class="mb-3">
-                        <label for="file" class="form-label">Subir Nueva Versión (Solo PDF o Excel)</label>
+                        <label for="file" class="form-label">Subir Nueva Versión (PDF, Excel o Word)</label>
                         <input type="file" class="form-control" id="file" name="file">
                         <div class="form-text">Tamaño máximo de archivo: 10MB</div>
                     </div>

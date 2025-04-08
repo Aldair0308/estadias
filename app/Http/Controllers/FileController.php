@@ -301,22 +301,54 @@ class FileController extends Controller
         }
 
         try {
-            // Create a new PHPWord instance
-            $phpWord = new \PhpOffice\PhpWord\PhpWord();
-            
-            // Create a new section in the document
-            $section = $phpWord->addSection();
-            
-            // HTML to Word conversion
-            \PhpOffice\PhpWord\Shared\Html::addHtml($section, $content);
+            // Sanitize HTML content
+            $content = $this->sanitizeHtmlContent($content);
 
-            // Create temporary file
-            $tempFile = tempnam(sys_get_temp_dir(), 'word');
+            // Create a new PHPWord instance with settings
+            $phpWord = new \PhpOffice\PhpWord\PhpWord();
+            $phpWord->setDefaultFontName('Arial');
+            $phpWord->setDefaultFontSize(11);
+            
+            // Create a new section with margins
+            $section = $phpWord->addSection([
+                'marginLeft' => 1440,  // 1 inch in twips
+                'marginRight' => 1440,
+                'marginTop' => 1440,
+                'marginBottom' => 1440
+            ]);
+            
+            // HTML to Word conversion with error handling
+            try {
+                \PhpOffice\PhpWord\Shared\Html::addHtml($section, $content, false, false);
+            } catch (\Exception $e) {
+                \Log::error('HTML conversion error: ' . $e->getMessage());
+                return response()->json(['error' => 'Error al convertir el contenido HTML a formato Word'], 400);
+            }
+
+            // Create temporary file with proper extension
+            $tempFile = tempnam(sys_get_temp_dir(), 'word') . '.docx';
             $objWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
-            $objWriter->save($tempFile);
+            
+            try {
+                $objWriter->save($tempFile);
+            } catch (\Exception $e) {
+                \Log::error('Error saving Word file: ' . $e->getMessage());
+                return response()->json(['error' => 'Error al guardar el documento Word'], 500);
+            }
+
+            // Verify the file was created and is readable
+            if (!file_exists($tempFile) || !is_readable($tempFile)) {
+                \Log::error('Temporary file creation failed or is not readable');
+                return response()->json(['error' => 'Error al crear el archivo temporal'], 500);
+            }
 
             // Read the content of the temp file
             $newContent = file_get_contents($tempFile);
+            if ($newContent === false) {
+                \Log::error('Failed to read temporary file content');
+                return response()->json(['error' => 'Error al leer el contenido del archivo temporal'], 500);
+            }
+
             unlink($tempFile); // Clean up temp file
 
             // Check for duplicate content in versions
@@ -325,7 +357,7 @@ class FileController extends Controller
                 $versionContent = Storage::disk('public')->get($version->path);
                 if ($newContent === $versionContent) {
                     return response()->json([
-                        'error' => 'This content already exists in version created at ' . $version->created_at
+                        'error' => 'Este contenido ya existe en la versión creada el ' . $version->created_at->format('d/m/Y H:i')
                     ], 400);
                 }
             }
@@ -335,26 +367,52 @@ class FileController extends Controller
             $path = 'files/' . $name;
 
             // Save the new version
-            Storage::disk('public')->put($path, $newContent);
+            try {
+                if (!Storage::disk('public')->put($path, $newContent)) {
+                    throw new \Exception('Failed to save file to storage');
+                }
+            } catch (\Exception $e) {
+                \Log::error('Storage error: ' . $e->getMessage());
+                return response()->json(['error' => 'Error al guardar el archivo en el almacenamiento'], 500);
+            }
 
             // Create new version in database
-            File::create([
-                'name' => $name,
-                'original_name' => $file->original_name,
-                'path' => $path,
-                'mime_type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'size' => Storage::disk('public')->size($path),
-                'version' => $file->version + 1,
-                'parent_id' => $file->parent_id ?? $file->id,
-                'description' => $file->description,
-                'observations' => 'Content updated through editor'
-            ]);
+            try {
+                File::create([
+                    'name' => $name,
+                    'original_name' => $file->original_name,
+                    'path' => $path,
+                    'mime_type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'size' => Storage::disk('public')->size($path),
+                    'version' => $file->version + 1,
+                    'parent_id' => $file->parent_id ?? $file->id,
+                    'description' => $file->description,
+                    'observations' => 'Contenido actualizado a través del editor'
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Database error: ' . $e->getMessage());
+                Storage::disk('public')->delete($path); // Clean up file if database insert fails
+                return response()->json(['error' => 'Error al guardar la información en la base de datos'], 500);
+            }
 
-            return response()->json(['success' => true, 'message' => 'Document updated successfully']);
+            return response()->json(['success' => true, 'message' => 'Documento actualizado exitosamente']);
 
         } catch (\Exception $e) {
             \Log::error('Error updating document content: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to update document content'], 500);
+            return response()->json(['error' => 'Error al actualizar el contenido del documento'], 500);
         }
+    }
+
+    protected function sanitizeHtmlContent($content)
+    {
+        // Remove potentially problematic HTML elements and attributes
+        $content = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', '', $content);
+        $content = preg_replace('/<style\b[^>]*>(.*?)<\/style>/is', '', $content);
+        $content = preg_replace('/on\w+="[^"]*"/i', '', $content);
+        
+        // Ensure proper encoding
+        $content = mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8');
+        
+        return $content;
     }
 }

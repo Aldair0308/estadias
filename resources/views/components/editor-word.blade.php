@@ -1,4 +1,5 @@
 <div class="word-editor-container">
+    <script src="https://cdn.ckeditor.com/4.16.2/full/ckeditor.js"></script>
     <link href="https://cdn.ckeditor.com/4.16.2/full/ckeditor.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
@@ -48,7 +49,7 @@
                 <button type="button" class="btn btn-sm btn-outline-secondary" id="toggleFullscreen">
                     <i class="bi bi-arrows-fullscreen"></i> Pantalla Completa
                 </button>
-                <button type="button" class="btn btn-sm btn-outline-primary" id="saveDocument" data-update-url="{{ Route::is('templates.*') ? route('templates.content.update', ['template' => $documentId]) : route('files.content.update', ['file' => $documentId]) }}">
+                <button type="button" class="btn btn-sm btn-outline-primary" id="saveDocument" data-update-url="{{ Route::is('templates.*') ? route('templates.content.update', ['template' => $documentId]) : route('files.content.update', ['file' => $documentId]) }}" data-document-id="{{ $documentId }}">
                     <i class="bi bi-save"></i> Guardar Cambios
                 </button>
             </div>
@@ -166,7 +167,12 @@
 
                     const data = await response.json();
                     alert('Documento guardado exitosamente');
-                    window.location.reload();
+                    // Determinar si estamos en una plantilla o un archivo y redirigir a la ruta write correspondiente
+                    const isTemplate = window.location.pathname.includes('/templates/');
+                    const writeUrl = isTemplate
+                        ? `/templates/${document.getElementById('saveDocument').dataset.documentId}/write`
+                        : `/files/${document.getElementById('saveDocument').dataset.documentId}/write`;
+                    window.location.href = writeUrl;
                 } catch (error) {
                     console.error('Error saving document:', error);
                     alert(error.message || 'Error al guardar el documento');
