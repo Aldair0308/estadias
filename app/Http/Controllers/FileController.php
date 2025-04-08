@@ -250,13 +250,29 @@ class FileController extends Controller
 
     public function review()
     {
-        $query = File::whereNull('parent_id');
+        $query = File::query();
         
         if (!auth()->user()->hasRole('tutor')) {
             $query->where('responsible_email', auth()->user()->email);
         }
         
-        $files = $query->with('responsible')->get();
+        // Get both parent files and their versions
+        $files = $query->with(['responsible', 'parent'])
+            ->where(function($q) {
+                $q->whereNull('parent_id')
+                  ->orWhereHas('parent');
+            })
+            ->get()
+            ->map(function($file) {
+                // Add version number information
+                if ($file->parent_id) {
+                    $file->version_display = 'Versión ' . $file->version;
+                    $file->original_name = $file->original_name . ' (Versión ' . $file->version . ')';
+                } else {
+                    $file->version_display = 'Original';
+                }
+                return $file;
+            });
         
         return view('files.review', compact('files'));
     }
@@ -420,7 +436,7 @@ class FileController extends Controller
                     'version' => $file->version + 1,
                     'parent_id' => $file->parent_id ?? $file->id,
                     'description' => $file->description,
-                    'observations' => 'Contenido actualizado a través del editor',
+                    'observations' => 'Sin observaciones.',
                     'responsible_email' => auth()->user()->email,
                     'checked' => false
                 ]);

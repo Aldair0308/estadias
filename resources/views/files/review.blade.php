@@ -56,9 +56,13 @@
                         <tbody>
                             @foreach($files->where('checked', false) as $file)
                                 <tr>
-                                    <td>{{ $file->original_name }}</td>
-                                    <td>{{ $file->responsible ? $file->responsible->name : 'No Responsible' }}</td>
-                                    <td>{{ $file->created_at->format('Y-m-d H:i') }}</td>
+                                    <td>
+                                        {{ $file->original_name }}
+                                        <br>
+                                        <small class="text-muted">{{ $file->version_display }}</small>
+                                    </td>
+                                    <td>{{ $file->responsible ? $file->responsible->name : 'Sin Responsable' }}</td>
+                                    <td>{{ $file->created_at->format('d/m/Y H:i') }}</td>
                                     <td>
                                         <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#previewModal{{ $file->id }}">
                                             Vista Previa
