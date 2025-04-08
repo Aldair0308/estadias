@@ -248,6 +248,39 @@ class FileController extends Controller
         return view('files.history', compact('parentFile', 'versions', 'file'));
     }
 
+    public function review()
+    {
+        $query = File::whereNull('parent_id');
+        
+        if (!auth()->user()->hasRole('tutor')) {
+            $query->where('responsible_email', auth()->user()->email);
+        }
+        
+        $files = $query->with('responsible')->get();
+        
+        return view('files.review', compact('files'));
+    }
+
+    public function markReviewed(string $id)
+    {
+        $file = File::findOrFail($id);
+        $file->update(['checked' => !$file->checked]);
+        
+        return back()->with('success', 'Estado de revisión actualizado exitosamente.');
+    }
+
+    public function updateObservations(Request $request, string $id)
+    {
+        $request->validate([
+            'observations' => 'required|string|max:2000'
+        ]);
+
+        $file = File::findOrFail($id);
+        $file->update(['observations' => $request->observations]);
+
+        return back()->with('success', 'Observaciones actualizadas exitosamente.');
+    }
+
     public function preview(File $file)
     {
         if ($file->isWord()) {
@@ -387,7 +420,9 @@ class FileController extends Controller
                     'version' => $file->version + 1,
                     'parent_id' => $file->parent_id ?? $file->id,
                     'description' => $file->description,
-                    'observations' => 'Contenido actualizado a través del editor'
+                    'observations' => 'Contenido actualizado a través del editor',
+                    'responsible_email' => auth()->user()->email,
+                    'checked' => false
                 ]);
             } catch (\Exception $e) {
                 \Log::error('Database error: ' . $e->getMessage());
