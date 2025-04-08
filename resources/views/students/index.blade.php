@@ -1,87 +1,196 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-[var(--primary-text)] leading-tight">
-            {{ __('Students') }}
-        </h2>
-    </x-slot>
-<div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center mb-4">
-            <h1 class="text-2xl font-bold text-[var(--primary-text)]">Estudiantes</h1>
-            <a href="{{ route('students.create') }}" class="px-4 py-2 bg-[var(--accent-color)] text-[var(--button-hover-text)] rounded-md hover:bg-[var(--button-hover-bg)] transition ease-in-out duration-150">
-                Agregar Estudiante
-            </a>
-        </div>
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Gestión de Estudiantes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+            --info-color: #0dcaf0;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --border-color: #e9ecef;
+            --card-bg: #ffffff;
+            --header-gradient-start: var(--primary-color);
+            --header-gradient-end: #0056b3;
+        }
 
-    @if(session('success'))
-        <div class="bg-[var(--button-bg)] border border-[var(--button-border)] text-[var(--button-text)] px-4 py-3 rounded relative mb-4" role="alert">
-            <span class="block sm:inline">{{ session('success') }}</span>
-            <button type="button" class="absolute top-0 bottom-0 right-0 px-4 py-3" onclick="this.parentElement.remove()">
-                <span class="sr-only">Close</span>
-                <svg class="h-6 w-6 text-[var(--accent-color)]" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
-        </div>
-    @endif
+        [data-theme="dark"] {
+            --bg-color: #212529;
+            --text-color: #f8f9fa;
+            --border-color: #495057;
+            --card-bg: #343a40;
+            --header-gradient-start: #2b3035;
+            --header-gradient-end: #1a1d20;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, var(--header-gradient-start), var(--header-gradient-end));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .card {
+            border: none;
+            background-color: var(--card-bg);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        .table {
+            background: var(--card-bg);
+            color: var(--text-color);
+            width: 100%;
+        }
 
-    <div class="bg-[var(--primary-bg)] overflow-hidden shadow-xl sm:rounded-lg border border-[var(--button-border)]">
-        <div class="p-6 bg-[var(--primary-bg)] border-b border-[var(--button-border)]">
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-[var(--button-bg)]">
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .table thead th {
+            background-color: var(--card-bg);
+            border-bottom: 2px solid var(--border-color);
+            color: var(--text-color);
+        }
+        
+        .table td, .table th {
+            color: var(--text-color);
+            border-color: rgba(73, 80, 87, 0.5);
+            white-space: nowrap;
+            padding: 0.75rem;
+            vertical-align: middle;
+            background-color: var(--card-bg);
+        }
+
+        .table tbody tr {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        .table tbody tr:hover {
+            background-color: var(--border-color);
+        }
+
+        @media (max-width: 768px) {
+            .btn-group {
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .btn-group .btn {
+                width: 100%;
+            }
+        }
+        
+        .btn-group .btn {
+            border-radius: 4px;
+        }
+    </style>
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        });
+    </script>
+</head>
+<body>
+    <div class="page-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="mb-0">Gestión de Estudiantes</h1>
+                <div class="btn-group">
+                    <button onclick="toggleTheme()" class="btn btn-light me-2">
+                        <i class="bi bi-moon-stars"></i>
+                    </button>
+                    <a href="{{ route('students.create') }}" class="btn btn-light">Agregar Estudiante</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container py-4">
+
+        @if(session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        <div class="card">
+            <div class="card-body table-responsive">
+                <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-[var(--button-text)] uppercase tracking-wider">Nombre</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-[var(--button-text)] uppercase tracking-wider">Grupo</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-[var(--button-text)] uppercase tracking-wider">Matrícula</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-[var(--button-text)] uppercase tracking-wider">Teléfono</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-[var(--button-text)] uppercase tracking-wider">Correo</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-[var(--button-text)] uppercase tracking-wider">Acciones</th>
+                            <th>Nombre</th>
+                            <th>Grupo</th>
+                            <th>Matrícula</th>
+                            <th>Teléfono</th>
+                            <th>Correo</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($students as $student)
-                            <tr class="bg-[var(--primary-bg)] even:bg-[var(--button-bg)]">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--primary-text)]">{{ $student->name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--primary-text)]">{{ $student->group }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--primary-text)]">{{ $student->matricula }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--primary-text)]">{{ $student->tel }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--primary-text)]">{{ $student->email }}</td>
+                            <tr>
+                                <td>{{ $student->name }}</td>
+                                <td>{{ $student->group }}</td>
+                                <td>{{ $student->matricula }}</td>
+                                <td>{{ $student->tel }}</td>
+                                <td>{{ $student->email }}</td>
                                 <td>
-                                    <div class="flex space-x-2" role="group">
-                                        <a href="{{ route('students.show', $student) }}" class="inline-flex items-center px-3 py-1 border border-[var(--button-border)] text-sm leading-4 font-medium rounded-md text-[var(--button-hover-text)] bg-[var(--accent-color)] hover:bg-[var(--button-hover-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)] transition ease-in-out duration-150">
-                                            Ver
-                                        </a>
-                                        <div class="inline-flex items-center px-3 py-1 border border-[var(--button-border)] text-sm leading-4 font-medium rounded-md text-[var(--button-hover-text)] bg-[var(--accent-color)] hover:bg-[var(--button-hover-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)] transition ease-in-out duration-150">
-                                            <a href="{{ route('students.edit', $student) }}" class="inline-flex items-center px-3 py-1 border border-[var(--button-border)] text-sm leading-4 font-medium rounded-md text-[var(--button-hover-text)] bg-[var(--accent-color)] hover:bg-[var(--button-hover-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)] transition ease-in-out duration-150">
-                                                Editar
-                                            </a>
-                                        </div>
-                                        <form action="{{ route('students.destroy', $student) }}" method="POST" class="inline-block">
+                                    <div class="btn-group">
+                                        <a href="{{ route('students.show', $student) }}" class="btn btn-sm btn-info">Ver</a>
+                                        <a href="{{ route('students.edit', $student) }}" class="btn btn-sm btn-warning">Editar</a>
+                                        <form action="{{ route('students.destroy', $student) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="inline-flex items-center px-3 py-1 border border-[var(--button-border)] text-sm leading-4 font-medium rounded-md text-[var(--button-hover-text)] bg-[var(--accent-color)] hover:bg-[var(--button-hover-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)] transition ease-in-out duration-150" onclick="return confirm('¿Estás seguro de que deseas eliminar este estudiante?')">
-                                                Eliminar
-                                            </button>
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de que deseas eliminar este estudiante?')">Eliminar</button>
                                         </form>
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-4 whitespace-nowrap text-sm text-[var(--button-text)] text-center">
-                                    No hay estudiantes registrados.
-                                </td>
+                                <td colspan="6" class="text-center">No hay estudiantes registrados.</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-            <div class="mt-4">
+            <div class="card-footer">
                 {{ $students->links() }}
             </div>
         </div>
     </div>
-</div>
-</x-app-layout>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

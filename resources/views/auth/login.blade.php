@@ -1,68 +1,252 @@
-<x-guest-layout>
-    <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-50">
-        <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
-            <!-- App Name -->
-            <div class="text-center mb-8">
-                <h1 class="text-8xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 mb-4">UTVStay</h1>
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Iniciar Sesión - UTVstay</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+            --info-color: #0dcaf0;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --border-color: #e9ecef;
+            --card-bg: #ffffff;
+            --header-gradient-start: var(--primary-color);
+            --header-gradient-end: #0056b3;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1e21;
+            --text-color: #e9ecef;
+            --border-color: #495057;
+            --card-bg: #2b3035;
+            --header-gradient-start: #212529;
+            --header-gradient-end: #141619;
+        }
+        
+        body {
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=1920&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        [data-theme="dark"] body {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=1920&auto=format&fit=crop');
+        }
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 2rem;
+            margin: 1rem;
+            background: var(--card-bg);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        @media (min-width: 576px) {
+            .login-container {
+                padding: 2.5rem;
+                margin: 2rem auto;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .app-logo {
+                font-size: 3rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .btn-theme-toggle {
+                top: 0.5rem;
+                right: 0.5rem;
+            }
+        }
+
+        .login-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] .app-logo {
+            color: white;
+        }
+        .app-logo {
+            background: linear-gradient(135deg, var(--header-gradient-start), var(--header-gradient-end));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-size: 4rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            background-color: var(--bg-color);
+            border-color: var(--primary-color);
+            color: var(--text-color);
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        .btn-theme-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .btn-theme-toggle:hover {
+            transform: rotate(30deg);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--header-gradient-start), var(--header-gradient-end));
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4);
+        }
+
+        .text-muted {
+            color: var(--text-color) !important;
+            opacity: 0.7;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        a:hover {
+            color: var(--header-gradient-end);
+        }
+    </style>
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        });
+    </script>
+</head>
+<body>
+    <button onclick="toggleTheme()" class="btn btn-theme-toggle" title="Cambiar tema">
+        <i class="bi bi-moon-stars"></i>
+    </button>
+
+    <div class="login-container">
+        <div class="app-logo">UTVstay</div>
+
+        <!-- Session Status -->
+        <x-auth-session-status class="mb-4" :status="session('status')" />
+
+        <div class="text-center mb-4">
+            <h2 class="h4 mb-2">{{ __('Bienvenido de nuevo') }}</h2>
+            <p class="text-muted">{{ __('Inicia sesión en tu cuenta') }}</p>
+        </div>
+
+        <form method="POST" action="{{ route('login') }}">
+            @csrf
+
+            <!-- Email Address -->
+            <div class="mb-3">
+                <label for="email" class="form-label">{{ __('Email') }}</label>
+                <input id="email" class="form-control" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" />
+                @error('email')
+                    <div class="text-danger mt-1 small">{{ $message }}</div>
+                @enderror
             </div>
 
-            <!-- Session Status -->
-            <x-auth-session-status class="mb-4" :status="session('status')" />
-
-            <div class="text-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">{{ __('Bienvenido de nuevo') }}</h2>
-                <p class="text-gray-600 mt-1">{{ __('Inicia sesión en tu cuenta') }}</p>
+            <!-- Password -->
+            <div class="mb-3">
+                <label for="password" class="form-label">{{ __('Contraseña') }}</label>
+                <input id="password" class="form-control" type="password" name="password" required autocomplete="current-password" />
+                @error('password')
+                    <div class="text-danger mt-1 small">{{ $message }}</div>
+                @enderror
             </div>
 
-            <form method="POST" action="{{ route('login') }}">
-        @csrf
+            <!-- Remember Me -->
+            <div class="mb-3">
+                <div class="form-check">
+                    <input id="remember_me" type="checkbox" class="form-check-input" name="remember">
+                    <label class="form-check-label" for="remember_me">{{ __('Recuérdame') }}</label>
+                </div>
+            </div>
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
-
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Recuérdame') }}</span>
-            </label>
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('¿Olvidaste tu contraseña?') }}
-                </a>
-            @endif
-
-            <x-primary-button class="w-full mt-4 px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 justify-center">
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">
                     {{ __('Iniciar sesión') }}
-                </x-primary-button>
-        </div>
-    </form>
+                </button>
 
-            <div class="text-center mt-6 pt-4 border-t border-gray-200">
-                <p class="text-gray-600 text-sm">
-                    {{ __('¿No tienes una cuenta?') }} 
-                    <a href="{{ route('register') }}" class="text-indigo-600 hover:text-indigo-800 font-medium transition duration-200">{{ __('Regístrate') }}</a>
-                </p>
+                @if (Route::has('password.request'))
+                    <a class="text-center" href="{{ route('password.request') }}">
+                        {{ __('¿Olvidaste tu contraseña?') }}
+                    </a>
+                @endif
             </div>
+        </form>
+
+        <div class="text-center mt-4 pt-3 border-top">
+            <p class="text-muted">
+                {{ __('¿No tienes una cuenta?') }}
+                <a href="{{ route('register') }}">{{ __('Regístrate') }}</a>
+            </p>
         </div>
     </div>
-</x-guest-layout>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
