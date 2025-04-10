@@ -266,7 +266,7 @@
 
     <footer class="text-center">
         <div class="container">
-            <p class="text-muted mb-0">© {{ date('Y') }} UTVstay - Universidad Tecnológica de la Vega</p>
+            <p class="text-muted mb-0">© {{ date('Y') }} UTVstay - Universidad Tecnológica del Valle de Toluca</p>
         </div>
     </footer>
 
