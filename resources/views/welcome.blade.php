@@ -9,37 +9,42 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         :root {
-            --primary-color: #0d6efd;
-            --secondary-color: #6c757d;
-            --success-color: #198754;
-            --info-color: #0dcaf0;
+            --primary-color: #35B550;
+            --secondary-color: #2CA14D;
+            --success-color: #35B550;
+            --info-color: #2CA14D;
             --warning-color: #ffc107;
             --danger-color: #dc3545;
             --light-color: #f8f9fa;
-            --dark-color: #212529;
-            --bg-color: #f8f9fa;
-            --text-color: #212529;
+            --dark-color: #121212;
+            --bg-color: #FFFFFF;
+            --text-color: #2CA14D;
             --border-color: #e9ecef;
-            --card-bg: #ffffff;
-            --header-gradient-start: var(--primary-color);
-            --header-gradient-end: #0056b3;
-            --preview-bg: #ffffff;
-            --preview-text: #212529;
-            --table-text: #212529;
-            --table-bg: #ffffff;
+            --card-bg: #FFFFFF;
+            --header-gradient-start: #35B550;
+            --header-gradient-end: #2CA14D;
+            --preview-bg: #FFFFFF;
+            --preview-text: #2CA14D;
+            --table-text: #2CA14D;
+            --table-bg: #FFFFFF;
         }
 
         [data-theme="dark"] {
-            --bg-color: #1a1e21;
-            --text-color: #e9ecef;
-            --border-color: #495057;
-            --card-bg: #2b3035;
-            --header-gradient-start: #212529;
-            --header-gradient-end: #141619;
-            --table-text: #e9ecef;
-            --table-bg: #2b3035;
-            --preview-bg: #2b3035;
-            --preview-text: #e9ecef;
+            --bg-color: #121212;
+            --text-color: #FFFFFF;
+            --border-color: #2CA14D;
+            --card-bg: #1E1E1E;
+            --header-gradient-start: #35B550;
+            --header-gradient-end: #2CA14D;
+            --muted-text: #FFFFFF;
+            --preview-bg: #1E1E1E;
+            --preview-text: #FFFFFF;
+            --table-text: #FFFFFF;
+            --table-bg: #1E1E1E;
+
+            .text-muted {
+                color: #FFFFFF !important;
+            }
         }
         
         body {
@@ -205,7 +210,7 @@
     <section class="hero-section text-center">
         <div class="container">
             <h1 class="display-4 fw-bold mb-4">Bienvenido a UTVstay</h1>
-            <p class="lead mb-5">Sistema de Gestión de Estadías de la Universidad Tecnológica de la Vega</p>
+            <p class="lead mb-5">Sistema de Gestión de Estadías de la Universidad Tecnológica del Valle de Toluca</p>
             <div class="auth-buttons">
                 @if (Route::has('login'))
                     @auth
