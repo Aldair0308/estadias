@@ -4,42 +4,42 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Dashboard</title>
+    <title>UTVstay - Panel de Control</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         :root {
-            --primary-color: #0d6efd;
-            --secondary-color: #6c757d;
-            --success-color: #198754;
-            --info-color: #0dcaf0;
+            --primary-color: #35B550;
+            --secondary-color: #2CA14D;
+            --success-color: #35B550;
+            --info-color: #2CA14D;
             --warning-color: #ffc107;
             --danger-color: #dc3545;
             --light-color: #f8f9fa;
-            --dark-color: #212529;
-            --bg-color: #f8f9fa;
-            --text-color: #212529;
+            --dark-color: #121212;
+            --bg-color: #FFFFFF;
+            --text-color: #2CA14D;
             --border-color: #e9ecef;
-            --card-bg: #ffffff;
-            --header-gradient-start: var(--primary-color);
-            --header-gradient-end: #0056b3;
-            --preview-bg: #ffffff;
-            --preview-text: #212529;
-            --table-text: #212529;
-            --table-bg: #ffffff;
+            --card-bg: #FFFFFF;
+            --header-gradient-start: #35B550;
+            --header-gradient-end: #2CA14D;
+            --preview-bg: #FFFFFF;
+            --preview-text: #2CA14D;
+            --table-text: #2CA14D;
+            --table-bg: #FFFFFF;
         }
 
         [data-theme="dark"] {
-            --bg-color: #1a1e21;
-            --text-color: #e9ecef;
-            --border-color: #495057;
-            --card-bg: #2b3035;
-            --header-gradient-start: #212529;
-            --header-gradient-end: #141619;
-            --table-text: #e9ecef;
-            --table-bg: #2b3035;
-            --preview-bg: #ffffff;
-            --preview-text: #212529;
+            --bg-color: #121212;
+            --text-color: #FFFFFF;
+            --border-color: #2CA14D;
+            --card-bg: #1E1E1E;
+            --header-gradient-start: #35B550;
+            --header-gradient-end: #2CA14D;
+            --table-text: #FFFFFF;
+            --table-bg: #1E1E1E;
+            --preview-bg: #1E1E1E;
+            --preview-text: #FFFFFF;
         }
         
         body {
@@ -87,7 +87,7 @@
     <div class="page-header">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
-                <h1 class="mb-0">{{ __('Dashboard') }}</h1>
+                <h1 class="mb-0">{{ __('Panel de Control') }}</h1>
                 <div class="d-flex gap-2">
                     <button onclick="toggleTheme()" class="btn btn-light">
                         <i class="bi bi-moon-stars"></i>
@@ -110,20 +110,20 @@
                     <div class="card-body">
                         <div class="d-flex align-items-center mb-4">
                             <i class="bi bi-check-circle-fill text-success fs-4 me-2"></i>
-                            <h5 class="mb-0">{{ __('You\'re logged in!') }}</h5>
+                            <h5 class="mb-0">{{ __('¡Has iniciado sesión!') }}</h5>
                         </div>
                         <div class="d-flex gap-2">
                             <a href="{{ route('files.index') }}" class="btn btn-primary me-2">
-                                <i class="bi bi-file-earmark me-2"></i>Files
+                                <i class="bi bi-file-earmark me-2"></i>Archivos
                             </a>
                             @role('tutor')
                             <a href="{{ route('students.index') }}" class="btn btn-info me-2">
-                                <i class="bi bi-people me-2"></i>Students
+                                <i class="bi bi-people me-2"></i>Estudiantes
                             </a>
                             @endrole
                             @role('admin')
                             <a href="{{ route('templates.index') }}" class="btn btn-success">
-                                <i class="bi bi-file-earmark-text me-2"></i>Templates
+                                <i class="bi bi-file-earmark-text me-2"></i>Plantillas
                             </a>
                             @endrole
                         </div>
