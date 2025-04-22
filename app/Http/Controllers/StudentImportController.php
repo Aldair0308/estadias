@@ -30,20 +30,60 @@ class StudentImportController extends Controller
                 return redirect()->back()->with('error', 'El archivo CSV no contiene todas las columnas requeridas.');
             }
 
-            // Procesar cada fila
+            // Preparar datos para vista previa
+            $previewData = [];
             foreach ($csvData as $row) {
                 $data = array_combine($headers, $row);
-                
-                Student::create([
+                $password = substr($data['matricula'], 0, 4) . substr($data['email'], 0, 4);
+                $previewData[] = [
                     'name' => $data['name'],
                     'email' => $data['email'],
-                    'matricula' => $data['matricula']
-                ]);
+                    'matricula' => $data['matricula'],
+                    'password' => $password
+                ];
             }
 
-            return redirect()->back()->with('success', 'Estudiantes importados correctamente.');
+            // Guardar datos en sesión para uso posterior
+            session(['preview_data' => $previewData]);
+
+            return view('students.preview', ['students' => $previewData]);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error al procesar el archivo: ' . $e->getMessage());
         }
     }
-}
+
+    public function confirmImport()
+    {
+        try {
+            $previewData = session('preview_data');
+            
+            if (!$previewData) {
+                return redirect()->route('students.import')->with('error', 'No hay datos para importar.');
+            }
+
+            foreach ($previewData as $data) {
+                // Crear usuario
+                \App\Models\User::create([
+                    'name' => $data['name'],
+                    'email' => $data['email'],
+                    'password' => bcrypt($data['password'])
+                ]);
+                
+                // Crear estudiante sin grupo
+                Student::create([
+                    'name' => $data['name'],
+                    'email' => $data['email'],
+                    'matricula' => $data['matricula'],
+                    'tel' => ''
+                ]);
+            }
+
+            // Limpiar datos de sesión
+            session()->forget('preview_data');
+
+            return redirect()->route('students.index')->with('success', 'Estudiantes importados correctamente.');
+        } catch (\Exception $e) {
+            return redirect()->route('students.import')->with('error', 'Error al importar estudiantes: ' . $e->getMessage());
+        }
+    }
+    }

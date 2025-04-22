@@ -113,7 +113,7 @@
                             </div>
                         @endif
 
-                        <form action="{{ route('students.import.process') }}" method="POST" enctype="multipart/form-data">
+                        <form action="{{ route('students.import') }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             <div class="mb-4">
                                 <label for="csv_file" class="custom-file-upload w-100">

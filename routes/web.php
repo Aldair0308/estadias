@@ -24,7 +24,8 @@ Route::get('/', function () {
 });
 
 Route::get('/students/import', [StudentImportController::class, 'showImportForm'])->name('students.import')->middleware(['auth', 'role:tutor|admin']);
-Route::post('/students/import/process', [StudentImportController::class, 'import'])->name('students.import.process')->middleware(['auth', 'role:tutor|admin']);
+Route::post('/students/import', [StudentImportController::class, 'import'])->name('students.import.process')->middleware(['auth', 'role:tutor|admin']);
+Route::post('/students/import/confirm', [StudentImportController::class, 'confirmImport'])->name('students.import.confirm')->middleware(['auth', 'role:tutor|admin']);
 Route::resource('students', StudentsController::class)->middleware(['auth', 'role:tutor']);
 
 Route::resource('files', FileController::class);
