@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentsController;
+use App\Http\Controllers\StudentImportController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\TemplateVersionController;
@@ -22,9 +23,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::middleware(['auth', 'role:tutor'])->group(function () {
-    Route::resource('students', StudentsController::class);
-});
+Route::get('/students/import', [StudentImportController::class, 'showImportForm'])->name('students.import')->middleware(['auth', 'role:tutor|admin']);
+Route::post('/students/import/process', [StudentImportController::class, 'import'])->name('students.import.process')->middleware(['auth', 'role:tutor|admin']);
+Route::resource('students', StudentsController::class)->middleware(['auth', 'role:tutor']);
 
 Route::resource('files', FileController::class);
 Route::get('/files-review', [FileController::class, 'review'])->name('files.review')->middleware(['auth', 'role:tutor']);
