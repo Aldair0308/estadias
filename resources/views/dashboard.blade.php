@@ -120,10 +120,16 @@
                             <a href="{{ route('students.index') }}" class="btn btn-info me-2">
                                 <i class="bi bi-people me-2"></i>Estudiantes
                             </a>
+                            <a href="{{ route('students.import') }}" class="btn btn-info">
+                                <i class="bi bi-upload me-2"></i>Importar Estudiantes
+                            </a>
                             @endrole
                             @role('admin')
-                            <a href="{{ route('templates.index') }}" class="btn btn-success">
+                            <a href="{{ route('templates.index') }}" class="btn btn-success me-2">
                                 <i class="bi bi-file-earmark-text me-2"></i>Plantillas
+                            </a>
+                            <a href="{{ route('students.import') }}" class="btn btn-success">
+                                <i class="bi bi-upload me-2"></i>Importar Estudiantes
                             </a>
                             @endrole
                         </div>

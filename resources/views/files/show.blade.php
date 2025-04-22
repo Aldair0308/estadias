@@ -9,36 +9,36 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         :root {
-            --primary-color: #0d6efd;
-            --secondary-color: #6c757d;
-            --success-color: #198754;
+            --primary-color: #35B550;
+            --secondary-color: #2CA14D;
+            --success-color: #35B550;
             --info-color: #0dcaf0;
             --warning-color: #ffc107;
             --danger-color: #dc3545;
             --light-color: #f8f9fa;
             --dark-color: #212529;
-            --bg-color: #f8f9fa;
+            --bg-color: #FFFFFF;
             --text-color: #212529;
             --border-color: #e9ecef;
-            --card-bg: #ffffff;
-            --header-gradient-start: var(--primary-color);
-            --header-gradient-end: #0056b3;
-            --preview-bg: #ffffff;
+            --card-bg: #FFFFFF;
+            --header-gradient-start: #35B550;
+            --header-gradient-end: #2CA14D;
+            --preview-bg: #FFFFFF;
             --preview-text: #212529;
             --table-text: #212529;
-            --table-bg: #ffffff;
+            --table-bg: #FFFFFF;
         }
 
         [data-theme="dark"] {
-            --bg-color: #1a1e21;
+            --bg-color: #121212;
             --text-color: #e9ecef;
             --border-color: #495057;
-            --card-bg: #2b3035;
-            --header-gradient-start: #212529;
-            --header-gradient-end: #141619;
+            --card-bg: #1E1E1E;
+            --header-gradient-start: #2CA14D;
+            --header-gradient-end: #1E1E1E;
             --table-text: #e9ecef;
-            --table-bg: #2b3035;
-            --preview-bg: #ffffff;
+            --table-bg: #1E1E1E;
+            --preview-bg: #FFFFFF;
             --preview-text: #212529;
         }
         
@@ -140,11 +140,11 @@
         .btn-primary {
             background: var(--primary-color);
             border: none;
-            box-shadow: 0 2px 4px rgba(13, 110, 253, 0.2);
+            box-shadow: 0 2px 4px rgba(53, 181, 80, 0.2);
         }
         
         .btn-primary:hover {
-            background: #0056b3;
+            background: var(--secondary-color);
             transform: translateY(-1px);
         }
         

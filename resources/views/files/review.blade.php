@@ -9,15 +9,39 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         :root {
-            --primary-color: #0d6efd;
-            --secondary-color: #6c757d;
-            --success-color: #198754;
+            --primary-color: #35B550;
+            --secondary-color: #2CA14D;
+            --success-color: #35B550;
             --info-color: #0dcaf0;
             --warning-color: #ffc107;
             --danger-color: #dc3545;
             --light-color: #f8f9fa;
             --dark-color: #212529;
-            --bg-color: #f8f9fa;
+            --bg-color: #ffffff;
+            --text-color: #212529;
+            --border-color: #e9ecef;
+            --card-bg: #ffffff;
+            --header-gradient-start: var(--primary-color);
+            --header-gradient-end: var(--secondary-color);
+            --preview-bg: #ffffff;
+            --preview-text: #212529;
+            --table-text: #212529;
+            --table-bg: #ffffff;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #e9ecef;
+            --border-color: #2CA14D;
+            --card-bg: #1E1E1E;
+            --header-gradient-start: #121212;
+            --header-gradient-end: #1E1E1E;
+            --table-text: #e9ecef;
+            --table-bg: #1E1E1E;
+            --preview-bg: #ffffff;
+            --preview-text: #212529;
+        }
+        --bg-color: #f8f9fa;
             --text-color: #212529;
             --border-color: #e9ecef;
             --card-bg: #ffffff;

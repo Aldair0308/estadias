@@ -7,6 +7,76 @@
     <title>Editor de Documento Word</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #35B550;
+            --secondary-color: #2CA14D;
+            --success-color: #35B550;
+            --info-color: #2CA14D;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --light-color: #f8f9fa;
+            --dark-color: #121212;
+            --bg-color: #FFFFFF;
+            --text-color: #2CA14D;
+            --border-color: #e9ecef;
+            --card-bg: #FFFFFF;
+            --header-gradient-start: #35B550;
+            --header-gradient-end: #2CA14D;
+            --preview-bg: #FFFFFF;
+            --preview-text: #2CA14D;
+            --table-text: #2CA14D;
+            --table-bg: #FFFFFF;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #FFFFFF;
+            --border-color: #2CA14D;
+            --card-bg: #1E1E1E;
+            --header-gradient-start: #35B550;
+            --header-gradient-end: #2CA14D;
+            --table-text: #FFFFFF;
+            --table-bg: #1E1E1E;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-color: var(--border-color);
+        }
+
+        .card-header {
+            background: linear-gradient(to right, var(--header-gradient-start), var(--header-gradient-end));
+            color: #FFFFFF;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .btn-info {
+            background-color: var(--info-color);
+            border-color: var(--info-color);
+            color: #FFFFFF;
+        }
+
+        .alert-info {
+            background-color: var(--info-color);
+            border-color: var(--info-color);
+            color: #FFFFFF;
+        }
+
+        .alert-warning {
+            background-color: var(--warning-color);
+            border-color: var(--warning-color);
+        }
+    </style>
 </head>
 <body class="bg-light">
     <div class="container py-5">
