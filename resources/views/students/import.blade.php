@@ -116,6 +116,9 @@
                         <form action="{{ route('students.import') }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             <div class="mb-4">
+                                <label for="group" class="block text-sm font-medium text-gray-700">Grupo</label>
+                                <input type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" id="group" name="group" required>
+                            </div>
                                 <label for="csv_file" class="custom-file-upload w-100">
                                     <i class="bi bi-cloud-upload fs-1 text-primary mb-3"></i>
                                     <h4>Arrastra y suelta tu archivo CSV aquí</h4>

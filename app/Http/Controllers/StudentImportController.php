@@ -25,6 +25,7 @@ class StudentImportController extends Controller
             // Verificar los encabezados
             $headers = array_shift($csvData);
             $requiredHeaders = ['name', 'email', 'matricula'];
+            $optionalHeaders = ['tel'];
             
             if (count(array_intersect($requiredHeaders, $headers)) !== count($requiredHeaders)) {
                 return redirect()->back()->with('error', 'El archivo CSV no contiene todas las columnas requeridas.');
@@ -39,6 +40,7 @@ class StudentImportController extends Controller
                     'name' => $data['name'],
                     'email' => $data['email'],
                     'matricula' => $data['matricula'],
+                    'tel' => $data['tel'] ?? null,
                     'password' => $password
                 ];
             }
@@ -52,7 +54,7 @@ class StudentImportController extends Controller
         }
     }
 
-    public function confirmImport()
+    public function confirmImport(Request $request)
     {
         try {
             $previewData = session('preview_data');
@@ -60,6 +62,8 @@ class StudentImportController extends Controller
             if (!$previewData) {
                 return redirect()->route('students.import')->with('error', 'No hay datos para importar.');
             }
+
+            $group = $request->input('group');
 
             foreach ($previewData as $data) {
                 // Crear usuario
@@ -69,12 +73,13 @@ class StudentImportController extends Controller
                     'password' => bcrypt($data['password'])
                 ]);
                 
-                // Crear estudiante sin grupo
+                // Crear estudiante con grupo y teléfono
                 Student::create([
                     'name' => $data['name'],
                     'email' => $data['email'],
                     'matricula' => $data['matricula'],
-                    'tel' => ''
+                    'tel' => $data['tel'] ?? null,
+                    'group' => $group
                 ]);
             }
 

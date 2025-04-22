@@ -93,6 +93,7 @@
                                         <th>Nombre</th>
                                         <th>Correo</th>
                                         <th>Matrícula</th>
+                                        <th>Teléfono</th>
                                         <th>Contraseña Generada</th>
                                     </tr>
                                 </thead>
@@ -102,6 +103,7 @@
                                             <td>{{ $student['name'] }}</td>
                                             <td>{{ $student['email'] }}</td>
                                             <td>{{ $student['matricula'] }}</td>
+                                            <td>{{ $student['tel'] ?? 'No proporcionado' }}</td>
                                             <td>{{ $student['password'] }}</td>
                                         </tr>
                                     @endforeach
@@ -110,8 +112,12 @@
                         </div>
 
                         <div class="text-center mt-4">
-                            <form action="{{ route('students.import.confirm') }}" method="POST">
+                            <form action="{{ route('students.import.confirm') }}" method="POST" class="mt-4">
                                 @csrf
+                                <div class="mb-4">
+                                    <label for="group" class="form-label">Grupo para los estudiantes</label>
+                                    <input type="text" class="form-control" id="group" name="group" required>
+                                </div>
                                 <button type="submit" class="btn btn-success btn-lg">
                                     <i class="bi bi-check-circle me-2"></i>Confirmar Importación
                                 </button>
