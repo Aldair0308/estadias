@@ -11,7 +11,12 @@ class StudentsController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('role:tutor');
+        $this->middleware('role:tutor', ['except' => ['classroom']]);
+    }
+
+    public function classroom()
+    {
+        return view('students.classroom');
     }
 
     public function index()

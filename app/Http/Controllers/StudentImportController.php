@@ -11,6 +11,10 @@ class StudentImportController extends Controller
     {
         return view('students.import');
     }
+    public function classroom()
+    {
+        return view('students.classroom');
+    }
 
     public function import(Request $request)
     {
