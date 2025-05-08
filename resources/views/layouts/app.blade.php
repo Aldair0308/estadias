@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="transition-colors duration-200">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -40,30 +40,26 @@
             }
         </style>
         <script>
-            function setTheme(theme) {
+            function toggleTheme() {
                 const html = document.documentElement;
-                if (theme === 'dark') {
-                    html.classList.add('dark');
-                    localStorage.setItem('darkMode', 'true');
-                } else {
-                    html.classList.remove('dark');
-                    localStorage.setItem('darkMode', 'false');
-                }
+                const currentTheme = html.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                html.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
             }
 
             document.addEventListener('DOMContentLoaded', () => {
-                const isDark = localStorage.getItem('darkMode') === 'true';
-                if (isDark) {
-                    document.documentElement.classList.add('dark');
-                    document.querySelector('select').value = 'dark';
-                } else {
-                    document.querySelector('select').value = 'light';
-                }
+                const savedTheme = localStorage.getItem('theme') || 'light';
+                document.documentElement.setAttribute('data-theme', savedTheme);
             });
         </script>
     </head>
-    <body class="font-sans antialiased transition-colors duration-200">
-        <div class="min-h-screen bg-[var(--secondary-bg)]">
+    <body>
+        <button onclick="toggleTheme()" class="btn btn-theme-toggle" title="Cambiar tema">
+            <i class="bi bi-moon-stars"></i>
+        </button>
+
+        <div class="min-h-screen">
 
             @include('layouts.navigation')
 

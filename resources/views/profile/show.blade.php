@@ -1,29 +1,29 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-    <div class="bg-[var(--primary-bg)] shadow rounded-lg overflow-hidden transition-colors duration-200">
-        <div class="px-6 py-4 border-b border-[var(--button-border)]">
-            <h2 class="text-xl font-semibold text-[var(--primary-text)]">Perfil de Usuario</h2>
+<div class="container py-6">
+    <div class="feature-card">
+        <div class="text-center mb-6">
+            <h2 class="section-title">Perfil de Usuario</h2>
         </div>
 
         <div class="p-6">
-            <div class="bg-[var(--button-bg)] p-6 rounded-lg shadow-sm border border-[var(--button-border)]">
-                <h3 class="text-lg font-medium mb-4 text-[var(--primary-text)]">Información Personal</h3>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-[var(--primary-text)]">Nombre Completo</label>
-                        <p class="mt-1 text-sm text-[var(--primary-text)]">{{ $user->name }}</p>
+            <div class="feature-card">
+                <h3 class="h4 mb-4 text-center">Información Personal</h3>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="block text-sm font-medium mb-2">Nombre Completo</label>
+                        <p class="text-muted">{{ $user->name }}</p>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-[var(--primary-text)]">Correo Electrónico</label>
-                        <p class="mt-1 text-sm text-[var(--primary-text)]">{{ $user->email }}</p>
+                    <div class="col-md-6">
+                        <label class="block text-sm font-medium mb-2">Correo Electrónico</label>
+                        <p class="text-muted">{{ $user->email }}</p>
                     </div>
                 </div>
 
-                <div class="mt-6 pt-6 border-t border-[var(--button-border)]">
-                    <a href="{{ route('profile.edit') }}" class="inline-flex items-center px-4 py-2 bg-[var(--accent-color)] border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-[var(--accent-color)] focus:bg-[var(--accent-color)] active:bg-[var(--accent-color)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)] focus:ring-offset-2 transition ease-in-out duration-150">
-                        {{ __('Editar Perfil') }}
+                <div class="mt-6 pt-6 border-top text-center">
+                    <a href="{{ route('profile.edit') }}" class="btn btn-primary">
+                        <i class="bi bi-pencil-square me-2"></i>{{ __('Editar Perfil') }}
                     </a>
                 </div>
             </div>
