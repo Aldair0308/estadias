@@ -62,8 +62,8 @@
                             <a href="{{ Storage::url($version1->path) }}" class="btn btn-primary" target="_blank">
                                 <i class="bi bi-download"></i> Descargar Versión {{ $version1->version }}
                             </a>
-                            <a href="https://view.officeapps.live.com/op/view.aspx?src={{ urlencode(url(Storage::url($version1->path))) }}" 
-                               class="btn btn-success mt-2" target="_blank">
+                            <a href="https://view.officeapps.live.com/op/view.aspx?src={{ urlencode(url(Storage::url($version1->path))) }}"
+                                class="btn btn-success mt-2" target="_blank">
                                 <i class="bi bi-eye"></i> Ver en Microsoft Office Online
                             </a>
                         </div>
@@ -106,8 +106,8 @@
                             <a href="{{ Storage::url($version2->path) }}" class="btn btn-primary" target="_blank">
                                 <i class="bi bi-download"></i> Descargar Versión {{ $version2->version }}
                             </a>
-                            <a href="https://view.officeapps.live.com/op/view.aspx?src={{ urlencode(url(Storage::url($version2->path))) }}" 
-                               class="btn btn-success mt-2" target="_blank">
+                            <a href="https://view.officeapps.live.com/op/view.aspx?src={{ urlencode(url(Storage::url($version2->path))) }}"
+                                class="btn btn-success mt-2" target="_blank">
                                 <i class="bi bi-eye"></i> Ver en Microsoft Office Online
                             </a>
                         </div>
