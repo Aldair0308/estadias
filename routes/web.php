@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('welcome');
 
 Route::get('/students/import', [StudentImportController::class, 'showImportForm'])->name('students.import')->middleware(['auth', 'role:tutor|admin']);
 Route::post('/students/import', [StudentImportController::class, 'import'])->name('students.import.process')->middleware(['auth', 'role:tutor|admin']);

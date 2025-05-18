@@ -15,7 +15,26 @@ export function initializeTheme() {
             document.documentElement.classList.add('dark');
             localStorage.theme = 'dark';
         }
+        // Actualizar la visibilidad de los íconos
+        updateThemeIcons();
     };
+
+    // Función para actualizar los íconos según el tema
+    function updateThemeIcons() {
+        const isDark = document.documentElement.classList.contains('dark');
+        const moonIcons = document.querySelectorAll('[data-icon="moon"]');
+        const sunIcons = document.querySelectorAll('[data-icon="sun"]');
+
+        moonIcons.forEach(icon => {
+            icon.style.display = isDark ? 'none' : 'block';
+        });
+        sunIcons.forEach(icon => {
+            icon.style.display = isDark ? 'block' : 'none';
+        });
+    }
+
+    // Inicializar los íconos
+    updateThemeIcons();
 }
 
 initializeTheme();
