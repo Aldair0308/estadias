@@ -18,8 +18,23 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
         </svg>
     </button>
+    
 
-    <section class="relative bg-gradient-to-br from-green-500 to-green-900 dark:from-green-700 text-white py-24 shadow-lg overflow-hidden">
+    @if (Route::has('login'))
+    @auth
+    <form method="POST" action="{{ route('logout') }}" class="fixed top-4 right-4 z-50">
+        @csrf
+        <button type="submit" class="p-2 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300 w-10 h-10 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+            </svg>
+        </button>
+    </form>
+    @endif
+    @endauth
+
+
+    <section class="relative bg-gradient-to-br from-green-500 to-green-900 dark:from-green-700 text-white py-16 shadow-lg overflow-hidden">
         <div class="absolute inset-0 opacity-10 pattern-dots-md"></div>
         <div class="container mx-auto px-4 text-center relative z-10">
             <h1 class="text-4xl md:text-5xl font-bold mb-6">Bienvenido a UTVstay</h1>
@@ -60,6 +75,50 @@
         </div>
     </section>
 
+    @if (Route::has('login'))
+    @auth
+    <div class="py-20 bg-gray-100 dark:bg-gray-800">
+        <div class="max-w-7xl mx-auto">
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white dark:bg-gray-700 overflow-hidden shadow-lg rounded-lg transition-all hover:shadow-xl">
+                    <div class="p-8">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Acciones Rápidas</h3>
+                        <div class="space-y-4">
+                            <a href="./files/create" class="flex items-center text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors">
+                                <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                Subir Nuevo Documento
+                            </a>
+                            <a href="/files" class="flex items-center text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors">
+                                <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                </svg>
+                                Ver Mis Documentos
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-700 overflow-hidden shadow-lg rounded-lg transition-all hover:shadow-xl">
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Notificaciones</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center text-sm">
+                                <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                                <span class="text-gray-600 dark:text-gray-300">Comentario nuevo en Proyecto</span>
+                            </div>
+                            <div class="flex items-center text-sm">
+                                <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                                <span class="text-gray-600 dark:text-gray-300">Comentario nuevo en Documento</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @else
     <section class="py-20 bg-gray-50 dark:bg-gray-800">
         <div class="container mx-auto px-4">
             <h2 class="text-3xl md:text-4xl font-bold text-center mb-16 text-gray-800 dark:text-white">¿Cómo Funciona?</h2>
@@ -252,6 +311,7 @@
             </div>
         </div>
     </section>
+    @endif
+    @endauth
 </body>
-
 </html>
